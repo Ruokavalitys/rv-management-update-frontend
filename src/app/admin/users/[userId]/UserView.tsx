@@ -5,10 +5,11 @@ import { currencyFormatter } from "@/lib/moneyFormatter";
 import { isDeposit, isPurchase } from "@/lib/transactions";
 import { merge } from "@/lib/utils";
 import { Deposit, Purchase } from "@/server/requests/historyRequests";
-import { User } from "@/server/requests/userRequests";
+import { User, changeUserRole } from "@/server/requests/userRequests";
 import { Copy } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import { UserRole } from "@/server/requests/types";
 
 export const UserView = ({
   user,
@@ -32,6 +33,17 @@ export const UserView = ({
 
     return view === "deposits" ? depositHistory : purchaseHistory;
   }, [depositHistory, purchaseHistory, view]);
+
+  //En saanut reloadia tehtyä ilamn että joku menee rikki
+  const handleRoleChange = async () => {
+    try {
+      await changeUserRole(user.userId, UserRole.ADMIN);
+      toast({ title: "User role updated to admin", duration: 2000 });
+    } catch (error) {
+      console.error('Error changing user role:', error);
+      toast({ title: "Failed to update user role", duration: 2000 });
+    }
+  };
 
   return (
     <div className="flex h-full w-full flex-col gap-y-4">
@@ -68,6 +80,14 @@ export const UserView = ({
               Role
             </label>
             <p id="role">{user.role}</p>
+            {user.role !== UserRole.ADMIN && (
+              <button
+                onClick={handleRoleChange}
+                className="mt-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700"
+              >
+                Make Admin
+              </button>
+            )}
           </div>
 
           <div className="flex flex-col">

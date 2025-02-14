@@ -77,3 +77,15 @@ export async function getUserPurchaseHistory(userId: number) {
     },
   ).then((data) => data.purchases);
 }
+
+export async function changeUserRole(userId: number, role: string) {
+  "use server";
+
+  return await authenticated<{ role: string }>(
+    `${process.env.RV_BACKEND_URL}/${targetUrl}/${userId}/changeRole`,
+    {
+      method: "POST",
+    },
+    { role }
+  ).then((data) => data.role);
+}
