@@ -54,7 +54,7 @@ export const authConfig = {
 
         if (parsedCredentials.success) {
           const authResponse = await fetch(
-            `${process.env.RV_BACKEND_URL}/api/v1/admin/authenticate`,
+            `${process.env.RV_BACKEND_URL}/api/v1/authenticate`,
             {
               method: "POST",
               headers: {
