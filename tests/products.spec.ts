@@ -57,7 +57,7 @@ test.describe.serial("CRUD", () => {
   test("User can edit a product", async ({ page }) => {
     await page.goto(`/admin/products/${randomBarcode}`);
 
-    await page.getByRole("link", { name: "Edit", exact: true }).click();
+    await page.getByRole("link", { name: "Edit Product Details", exact: true }).click();
     await page.locator("#name").click();
     await page.locator("#name").fill(randomRename);
     await page.locator("#categoryId").click();
@@ -90,5 +90,27 @@ test.describe.serial("CRUD", () => {
     await expect(
       page.locator("h3").filter({ hasText: randomRename }),
     ).not.toBeVisible();
+  });
+
+  test("User can edit buyPrice and sellPrice of a product", async ({ page }) => {
+    const randomBuyPrice = (Math.random() * (1000 - 1) + 1).toFixed(5);
+    const randomSellPrice = (Math.random() * (1000 - 1) + 1).toFixed(5);
+  
+    const roundedBuyPrice = Math.floor(parseFloat(randomBuyPrice) * 100) / 100;
+    const roundedSellPrice = Math.floor(parseFloat(randomSellPrice) * 100) / 100;
+  
+    await page.goto(`/admin/products/${randomBarcode}`);
+    await page.getByRole("link", { name: "Edit Product Details", exact: true }).click();
+  
+    await page.getByPlaceholder("Buy Price").click();
+    await page.getByPlaceholder("Buy Price").fill(roundedBuyPrice.toString());
+    await page.getByPlaceholder("Sell Price").click();
+    await page.getByPlaceholder("Sell Price").fill(roundedSellPrice.toString());
+  
+    await page.getByRole("button", { name: "Update Product" }).click();
+    await page.waitForURL(`/admin/products/${randomBarcode}`);
+  
+    await expect(page.locator("#buyPrice")).toHaveText(`${roundedBuyPrice.toFixed(2).replace('.', ',')} €`);
+    await expect(page.locator("#sellPrice")).toHaveText(`${roundedSellPrice.toFixed(2).replace('.', ',')} €`);
   });
 });
