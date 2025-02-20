@@ -9,7 +9,6 @@ import { Box } from "@/server/requests/boxRequests";
 import { Product } from "@/server/requests/productRequests";
 import Link from "next/link";
 import AttachedBoxesList from "./AttachedBoxesList";
-import ProductDeleteButton from "./ProductDeleteForm";
 
 type OwnProps = { product: Product; boxes: Box[] };
 
@@ -82,7 +81,6 @@ export const ProductView = ({ product, boxes }: OwnProps) => {
                   Edit Product Details
                 </Link>
               </Button>
-              <ProductDeleteButton product={product} />
             </div>
           </div>
         </div>
