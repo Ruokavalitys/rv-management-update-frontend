@@ -8,7 +8,7 @@ Next.js-based management terminal for TKO-äly ruokavälitys (snack kiosk)
 
 ## Forked Version
 
-This repository is a fork of the [TKOaly/rv-management-frontend](https://github.com/TKOaly/rv-management-frontend) project. In this version, the software is updated as part of the Ohtu project, incorporating changes and enhancements tailored to its specific goals.
+This repository is a fork of the [TKOaly/rv-management-frontend](https://github.com/TKOaly/rv-management-frontend) project. In this version, the software is updated as part of the Ohtu project (spring 2025), incorporating changes and enhancements tailored to its specific goals.
 
 ## Getting Started
 
