@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    services:
+      rv-backend:
+        image: rv-backend:latest
+        ports:
+          - 4040:4040
+        options: >-
+          --health-cmd "curl --fail http://localhost:8080/ || exit 1"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 3
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Configure environment
+        run: cp .env.example .env.local
+
+      - name: Start frontend and verify it is running
+        run: |
+          npm run dev &
+          sleep 15 
+          curl --fail http://localhost:4000
