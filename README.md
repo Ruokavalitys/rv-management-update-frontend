@@ -1,5 +1,7 @@
 # RV Management frontend
 
+[![CI](https://github.com/Ruokavalitys/rv-management-update-frontend/actions/workflows/ci.yaml/badge.svg)](https://github.com/Ruokavalitys/rv-management-update-frontend/actions/workflows/ci.yaml)
+
 Next.js-based management terminal for TKO-äly ruokavälitys (snack kiosk)
 
 [![image](https://github.com/TKOaly/rv-management-frontend/assets/56773501/6a007a0e-31b1-4619-b73f-0504ef298bbd)](/docs/screenshots/README.md)
