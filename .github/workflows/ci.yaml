@@ -1,0 +1,41 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '18.17.0'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Configure environment
+        run: cp .env.example .env.local
+
+      - name: Start frontend and verify it's running
+        run: |
+          npm run dev &
+          for i in {1..5}; do
+            if curl --silent --fail http://localhost:4000; then
+              echo "Frontend is up and running!"
+              exit 0
+            fi
+            echo "Waiting for frontend to start... ($i/10)"
+            sleep 5
+          done
+          
+          echo "Frontend did not start in time."
+          exit 1
