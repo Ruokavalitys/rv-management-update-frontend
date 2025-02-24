@@ -228,6 +228,28 @@ test.describe.serial("Filtering and Sorting", () => {
   
       expect(stocks.every(stock => stock === 0)).toBeTruthy(); 
       expect(prices.every(price => price < 10)).toBeTruthy(); 
-      expect(prices).toEqual([...prices].sort((a, b) => b - a));
-    });
+      expect(prices).toEqual([...prices].sort((a, b) => b - a)
+   }); 
+
+  test("User can edit buyPrice and sellPrice of a product", async ({ page }) => {
+    const randomBuyPrice = (Math.random() * (1000 - 1) + 1).toFixed(5);
+    const randomSellPrice = (Math.random() * (1000 - 1) + 1).toFixed(5);
+  
+    const roundedBuyPrice = Math.floor(parseFloat(randomBuyPrice) * 100) / 100;
+    const roundedSellPrice = Math.floor(parseFloat(randomSellPrice) * 100) / 100;
+  
+    await page.goto(`/admin/products/${randomBarcode}`);
+    await page.getByRole("link", { name: "Edit Product Details", exact: true }).click();
+  
+    await page.getByPlaceholder("Buy Price").click();
+    await page.getByPlaceholder("Buy Price").fill(roundedBuyPrice.toString());
+    await page.getByPlaceholder("Sell Price").click();
+    await page.getByPlaceholder("Sell Price").fill(roundedSellPrice.toString());
+  
+    await page.getByRole("button", { name: "Update Product" }).click();
+    await page.waitForURL(`/admin/products/${randomBarcode}`);
+  
+    await expect(page.locator("#buyPrice")).toHaveText(`${roundedBuyPrice.toFixed(2).replace('.', ',')} €`);
+    await expect(page.locator("#sellPrice")).toHaveText(`${roundedSellPrice.toFixed(2).replace('.', ',')} €`);
   });
+});
