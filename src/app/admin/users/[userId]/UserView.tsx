@@ -21,6 +21,7 @@ export const UserView = ({
   purchaseHistory: Omit<Purchase, "user">[];
 }) => {
   const { toast } = useToast();
+  const [role, setRole] = useState(user.role)
   const [view, setView] = useState<"combined" | "deposits" | "purchases">(
     "combined",
   );
@@ -34,11 +35,21 @@ export const UserView = ({
     return view === "deposits" ? depositHistory : purchaseHistory;
   }, [depositHistory, purchaseHistory, view]);
 
-  //En saanut reloadia tehtyä ilamn että joku menee rikki
   const handleRoleChange = async () => {
     try {
-      await changeUserRole(user.userId, UserRole.ADMIN);
-      toast({ title: "User role updated to admin", duration: 2000 });
+      if (user.role !== UserRole.ADMIN) {
+        await changeUserRole(user.userId, UserRole.ADMIN);
+        window.location.reload()
+        toast({ title: "User role updated to admin", duration: 2000 });
+        setRole(UserRole.ADMIN);
+      }
+      if (user.role === UserRole.ADMIN) {
+        await changeUserRole(user.userId, UserRole.USER1);
+        window.location.reload()
+        toast({ title: "Admin role updated to user1", duration: 2000 });
+        setRole(UserRole.USER1);
+        return;
+      }
     } catch (error) {
       console.error('Error changing user role:', error);
       toast({ title: "Failed to update user role", duration: 2000 });
@@ -79,13 +90,21 @@ export const UserView = ({
             <label htmlFor="role" className="text-sm text-stone-500">
               Role
             </label>
-            <p id="role">{user.role}</p>
+            <p id="role">{role}</p>
             {user.role !== UserRole.ADMIN && (
               <button
                 onClick={handleRoleChange}
                 className="mt-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700"
               >
                 Make Admin
+              </button>
+            )}
+            {user.role === UserRole.ADMIN && (
+              <button
+                onClick={handleRoleChange}
+                className="mt-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700"
+              >
+                Make User1
               </button>
             )}
           </div>
