@@ -5,7 +5,7 @@ import { currencyFormatter } from "@/lib/moneyFormatter";
 import { isDeposit, isPurchase } from "@/lib/transactions";
 import { merge } from "@/lib/utils";
 import { Deposit, Purchase } from "@/server/requests/historyRequests";
-import { User, changeUserRole } from "@/server/requests/userRequests";
+import { User, changeUserRole, changePassword } from "@/server/requests/userRequests";
 import { Copy } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
@@ -21,6 +21,7 @@ export const UserView = ({
   purchaseHistory: Omit<Purchase, "user">[];
 }) => {
   const { toast } = useToast();
+  const [password, setPassword] = useState("")
   const [role, setRole] = useState(user.role)
   const [view, setView] = useState<"combined" | "deposits" | "purchases">(
     "combined",
@@ -55,6 +56,17 @@ export const UserView = ({
       toast({ title: "Failed to update user role", duration: 2000 });
     }
   };
+
+  const handePasswordChange = async () => {
+    try {
+      await changePassword(user.userId, password);
+      toast({ title: "Users' password changed succesfully", duration: 2000 });
+    } catch (error) {
+      console.error('Error changing user password:', error);
+      toast({ title: "Failed to update user password", duration: 2000 });
+    }
+    setPassword("");
+  }
 
   return (
     <div className="flex h-full w-full flex-col gap-y-4">
@@ -96,7 +108,7 @@ export const UserView = ({
                 onClick={handleRoleChange}
                 className="mt-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700"
               >
-                Make Admin
+                Make into Admin
               </button>
             )}
             {user.role === UserRole.ADMIN && (
@@ -104,7 +116,7 @@ export const UserView = ({
                 onClick={handleRoleChange}
                 className="mt-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700"
               >
-                Make User1
+                Make into User1
               </button>
             )}
           </div>
@@ -134,6 +146,28 @@ export const UserView = ({
               )}
             </p>
           </div>
+            <div className="flex flex-col">
+            <label htmlFor="password" className="text-sm text-stone-500">
+              Change User's Password
+            </label>
+            <div className="flex gap-2">
+              <input
+              type="password"
+              id="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full px-2 py-1 border rounded"
+              placeholder="Enter new password"
+              />
+              <button
+              type="button"
+              onClick={handePasswordChange}
+              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700"
+              >
+              Update
+              </button>
+            </div>
+            </div>
         </div>
 
         <div className="flex h-full w-full flex-col overflow-clip px-4">
