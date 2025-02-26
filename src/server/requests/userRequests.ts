@@ -89,3 +89,15 @@ export async function changeUserRole(userId: number, role: string) {
     { role }
   ).then((data) => data.role);
 }
+
+export async function changePassword(userId: number, password: string) {
+  "use server";
+
+  return await authenticated<{ password: string }>(
+    `${process.env.RV_BACKEND_URL}/${targetUrl}/${userId}/changePassword`,
+    {
+      method: "POST",
+    },
+    { password }
+  ).then((data) => data.password);
+}
