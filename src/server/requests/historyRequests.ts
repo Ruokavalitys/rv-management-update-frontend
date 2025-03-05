@@ -14,6 +14,7 @@ export type Deposit = {
   amount: number;
   balanceAfter: number;
   user: User;
+  type: number;
 };
 export type getAllDepositsResponse = {
   deposits: Deposit[];
@@ -41,6 +42,7 @@ export type Purchase = {
   stockAfter: number;
   product: Product;
   user: User;
+  returned: boolean;
 };
 export type getAllPurchasesResponse = {
   purchases: Purchase[];
