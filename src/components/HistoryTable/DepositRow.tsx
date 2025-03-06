@@ -1,10 +1,16 @@
 import { Deposit } from "@/server/requests/historyRequests";
 
+const depositTypeMapping: { [key: number]: string } = {
+  17: "Deposit",
+  26: "Cash",
+  27: "Bank Transfer"
+};
+ 
 export const DepositRow = ({ deposit }: { deposit: Deposit }) => {
   return (
     <div
       key={deposit.depositId}
-      className="inline-grid w-full cursor-pointer grid-cols-3 border-b border-gray-200 px-4 py-3 transition-all hover:bg-stone-100"
+      className="inline-grid w-full cursor-pointer grid-cols-5 border-b border-gray-200 px-4 py-3 transition-all hover:bg-stone-100"
     >
       <div className="whitespace-nowrap">
         <h3 className="text-lg font-semibold">{deposit.user.username}</h3>
@@ -16,6 +22,16 @@ export const DepositRow = ({ deposit }: { deposit: Deposit }) => {
           {new Date(Date.parse(deposit.time)).toLocaleDateString()}
           {" - "}
           {new Date(Date.parse(deposit.time)).toLocaleTimeString()}
+        </p>
+      </div>
+
+      <div className="place-self-center self-center">
+        <p>Deposited</p>
+      </div>
+
+      <div className="place-self-center self-center">
+        <p>
+          {depositTypeMapping[deposit.type]}
         </p>
       </div>
 
