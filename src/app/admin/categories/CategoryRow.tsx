@@ -76,7 +76,13 @@ const EditDescription = ({
     </div>
   );
 };
-export const CategoryRow = ({ category }: { category: Category }) => {
+export const CategoryRow = ({
+  category,
+  productCount,
+}: {
+  category: Category;
+  productCount: number;
+}) => {
   const [description, setDescription] = useState(category.description);
   const [editing, setEditing] = useState(false);
 
@@ -116,6 +122,7 @@ export const CategoryRow = ({ category }: { category: Category }) => {
     >
       <input type="hidden" name="categoryId" value={category.categoryId} />
       <div className="w-24 text-lg font-semibold">{category.categoryId}</div>
+      <div className="w-24 text-lg font-semibold">{productCount}</div>
       <div className="flex flex-grow items-center gap-x-2 text-lg">
         {editing ? (
           <EditDescription
