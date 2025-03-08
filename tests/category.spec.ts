@@ -31,14 +31,6 @@ test.describe.serial("CRUD", () => {
     ).toBeVisible();
   });
 
-  test.skip("user can edit a category", async ({ page }) => {
-    const categoryRow = page
-      .locator("form")
-      .filter({ hasText: randomCategoryName })
-      .first();
-    await expect(categoryRow).toBeVisible();
-  });
-
   test("user can delete a category", async ({ page }) => {
     const categoryRow = page
       .locator("form")
@@ -128,5 +120,44 @@ test.describe.serial("CRUD", () => {
     await expect(page.locator("#category")).toHaveText(
       "DEFAULT GROUP, NO DEFINITION",
     );
+  });
+  test("Category product count updates correctly", async ({ page }) => {
+    await page.getByPlaceholder("New Category").fill(randomCategoryName);
+    await page.getByRole("button", { name: "Create" }).click();
+    await expect(
+      page.getByText(randomCategoryName, { exact: true }),
+    ).toBeVisible();
+
+    const categoryRow = page
+      .locator("form")
+      .filter({ hasText: randomCategoryName })
+      .first();
+    const productCountLocator = categoryRow.locator("div").nth(1);
+
+    const initialCount = await productCountLocator.innerText();
+    const initialNumber = parseInt(initialCount) || 0;
+
+    const newRandomBarcode = await getRandomBarcode();
+    const newRandomName = await getRandomName();
+
+    await page.goto("/admin/new/product");
+
+    await page.getByPlaceholder("Barcode").fill(newRandomBarcode);
+    await page.getByPlaceholder("Barcode").press("Enter");
+    await page.getByPlaceholder("Name").fill(newRandomName);
+    await page.getByText("Select category").click();
+    await page.getByLabel(randomCategoryName).click();
+    await page.getByRole("button", { name: "Create Product" }).click();
+
+    await page.waitForURL(`/admin/products/${newRandomBarcode}`);
+
+    await expect(page.locator("#category")).toHaveText(randomCategoryName);
+
+    await page.goto("/admin/categories");
+
+    const updatedCount = await productCountLocator.innerText();
+    const updatedNumber = parseInt(updatedCount) || 0;
+
+    expect(updatedNumber).toBe(initialNumber + 1);
   });
 });
