@@ -56,13 +56,13 @@ test.describe.serial("CRUD", () => {
   test("When user deletes a category the product moves to default category", async ({
     page,
   }) => {
-    const TestcategoryName = "This category will be deleted";
+    const TestcategoryName = `Test category ${Date.now()}`;
     await page.fill('input[placeholder="New Category"]', TestcategoryName);
 
     await page.click('button:has-text("Create")');
 
     const toast = page.locator(
-      'span[role="status"]:has-text(\'Category "This category will be deleted" has been created\')',
+      'span[role="status"]:has-text(\'Category "Test category\')',
     );
     await toast.waitFor({ state: "visible" });
 
@@ -76,7 +76,12 @@ test.describe.serial("CRUD", () => {
     await page.getByPlaceholder("Barcode").press("Enter");
     await page.getByPlaceholder("Name").fill(randomName);
     await page.getByText("Select category").click();
+    await page.getByPlaceholder("Search categories...").fill(TestcategoryName);
+
+    await page.waitForTimeout(500);
     await page.getByLabel(TestcategoryName).click();
+
+    
     await page.getByRole("button", { name: "Create Product" }).click();
 
     await page.waitForURL(`/admin/products/${randomBarcode}`);
@@ -121,6 +126,7 @@ test.describe.serial("CRUD", () => {
       "DEFAULT GROUP, NO DEFINITION",
     );
   });
+
   test("Category product count updates correctly", async ({ page }) => {
     await page.getByPlaceholder("New Category").fill(randomCategoryName);
     await page.getByRole("button", { name: "Create" }).click();
