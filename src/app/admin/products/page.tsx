@@ -1,7 +1,6 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { usePartialSetAtom } from "@/lib/utils";
 import { useAtomValue } from "jotai";
@@ -10,155 +9,284 @@ import Link from "next/link";
 import { productFiltersAtom } from "./ProductTable";
 
 export default function ProductFilters() {
-  const setFilters = usePartialSetAtom(productFiltersAtom);
-  const resetFilters = useResetAtom(productFiltersAtom);
-  const filters = useAtomValue(productFiltersAtom);
+	const setFilters = usePartialSetAtom(productFiltersAtom);
+	const resetFilters = useResetAtom(productFiltersAtom);
+	const filters = useAtomValue(productFiltersAtom);
 
-  const setExclusiveFilter = (filterKey: string) => {
-    setFilters({
-      quantityLessThan10: false,
-      quantityBetween10And50: false,
-      quantityGreaterThan50: false,
-      [filterKey]: !filters[filterKey as keyof typeof filters],
-    });
-  };
+	const toggleStockFilters = (
+		filterKey: "onlyInStock" | "onlyOutOfStock",
+		value: boolean,
+	) => {
+		if (filterKey === "onlyInStock") {
+			setFilters({ onlyInStock: value, onlyOutOfStock: false });
+		} else {
+			setFilters({
+				onlyOutOfStock: value,
+				onlyInStock: false,
+			});
+		}
+	};
 
-  const toggleStockFilters = (filterKey: "onlyInStock" | "onlyOutOfStock") => {
-    if (filterKey === "onlyInStock") {
-      setFilters({ onlyInStock: !filters.onlyInStock, onlyOutOfStock: false });
-    } else {
-      setFilters({ onlyOutOfStock: !filters.onlyOutOfStock, onlyInStock: false });
-    }
-  };
+	const toggleSortByPrice = (sortOrder: "asc" | "desc") => {
+		setFilters({
+			sortByPrice: filters.sortByPrice === sortOrder ? undefined : sortOrder,
+			sortByQuantity: "",
+		});
+	};
 
-  const toggleSortByPrice = (sortOrder: "asc" | "desc") => {
-    setFilters({ sortByPrice: filters.sortByPrice === sortOrder ? undefined : sortOrder });
-  };
+	const toggleSortByQuantity = (sortOrder: "asc" | "desc") => {
+		setFilters({
+			sortByQuantity:
+				filters.sortByQuantity === sortOrder ? undefined : sortOrder,
+			sortByPrice: "",
+		});
+	};
 
-  const toggleSortByQuantity = (sortOrder: "asc" | "desc") => {
-    setFilters({ sortByQuantity: filters.sortByQuantity === sortOrder ? undefined : sortOrder });
-  };
+	// Remove handleResetFilters, just reset directly
+	const handleResetFilters = () => {
+		resetFilters();
+	};
 
-  return (
-    <div className="flex w-1/4 flex-col gap-y-4">
-      <Button asChild variant="green" className="w-full">
-        <Link href="/admin/new/product">New Product</Link>
-      </Button>
-      <Button onClick={() => resetFilters()} className="w-full" variant={"outline"}>
-        Reset filters
-      </Button>
-      <label className="-mb-3 text-sm text-stone-500">Filters</label>
-      <Input
-        value={filters.search}
-        placeholder="Search products / boxes"
-        onChange={({ target }) => setFilters({ search: target.value })}
-      />
+	const resetSortByPrice = () => setFilters({ sortByPrice: undefined });
+	const resetSortByQuantity = () => setFilters({ sortByQuantity: undefined });
+	const resetStockFilter = () =>
+		setFilters({ onlyInStock: false, onlyOutOfStock: false });
+	const resetQuantityFilter = () =>
+		setFilters({ minQuantity: undefined, maxQuantity: undefined });
 
-      <div className="flex flex-col gap-y-2 rounded-lg border p-4 mt-4">
-        <p className="text-stone-500">Sort by price</p>
-        <div className="flex items-center gap-x-2">
-          <Checkbox
-            id="low_to_high"
-            checked={filters.sortByPrice === "asc"}
-            onClick={() => toggleSortByPrice("asc")}
-          />
-          <label htmlFor="low_to_high" className="cursor-pointer select-none text-sm">
-            Low to High
-          </label>
-        </div>
-        <div className="flex items-center gap-x-2">
-          <Checkbox
-            id="high_to_low"
-            checked={filters.sortByPrice === "desc"}
-            onClick={() => toggleSortByPrice("desc")}
-          />
-          <label htmlFor="high_to_low" className="cursor-pointer select-none text-sm">
-            High to Low
-          </label>
-        </div>
-      </div>
+	const handleQuantityChange = (
+		field: "minQuantity" | "maxQuantity",
+		value: string,
+	) => {
+		if (value === "") {
+			setFilters({ [field]: undefined });
+			return;
+		}
 
-      <div className="flex flex-col gap-y-2 rounded-lg border p-4 mt-4">
-        <p className="text-stone-500">Sort by quantity</p>
-        <div className="flex items-center gap-x-2">
-          <Checkbox
-            id="low_to_high_quantity"
-            checked={filters.sortByQuantity === "asc"}
-            onClick={() => toggleSortByQuantity("asc")}
-          />
-          <label htmlFor="low_to_high_quantity" className="cursor-pointer select-none text-sm">
-            Low to High
-          </label>
-        </div>
-        <div className="flex items-center gap-x-2">
-          <Checkbox
-            id="high_to_low_quantity"
-            checked={filters.sortByQuantity === "desc"}
-            onClick={() => toggleSortByQuantity("desc")}
-          />
-          <label htmlFor="high_to_low_quantity" className="cursor-pointer select-none text-sm">
-            High to Low
-          </label>
-        </div>
-      </div>
+		const numericValue = Number(value);
+		if (isNaN(numericValue)) {
+			return;
+		}
+		setFilters({ [field]: numericValue });
+	};
 
-      <div className="flex flex-col gap-y-2 rounded-lg border p-4 mt-4">
-        <p className="text-stone-500">Filter by quantity</p>
-        <div className="flex items-center gap-x-2">
-          <Checkbox
-            id="quantity_less_than_10"
-            checked={filters.quantityLessThan10}
-            onClick={() => setExclusiveFilter("quantityLessThan10")}
-          />
-          <label htmlFor="quantity_less_than_10" className="cursor-pointer select-none text-sm">
-            {"<"} 10
-          </label>
-        </div>
-        <div className="flex items-center gap-x-2">
-          <Checkbox
-            id="quantity_between_10_and_50"
-            checked={filters.quantityBetween10And50}
-            onClick={() => setExclusiveFilter("quantityBetween10And50")}
-          />
-          <label htmlFor="quantity_between_10_and_50" className="cursor-pointer select-none text-sm">
-            10 - 50
-          </label>
-        </div>
-        <div className="flex items-center gap-x-2">
-          <Checkbox
-            id="quantity_greater_than_50"
-            checked={filters.quantityGreaterThan50}
-            onClick={() => setExclusiveFilter("quantityGreaterThan50")}
-          />
-          <label htmlFor="quantity_greater_than_50" className="cursor-pointer select-none text-sm">
-            {">"} 50
-          </label>
-        </div>
-      </div>
-
-      <div className="flex flex-col gap-y-2 rounded-lg border p-4 mt-4">
-        <p className="text-stone-500">Show products by stock</p>
-        <div className="flex items-center gap-x-2">
-          <Checkbox
-            id="in_stock_only"
-            checked={filters.onlyInStock}
-            onClick={() => toggleStockFilters("onlyInStock")}
-          />
-          <label htmlFor="in_stock_only" className="cursor-pointer select-none text-sm">
-            Show in stock only
-          </label>
-        </div>
-        <div className="flex items-center gap-x-2">
-          <Checkbox
-            id="out_of_stock_only"
-            checked={filters.onlyOutOfStock}
-            onClick={() => toggleStockFilters("onlyOutOfStock")}
-          />
-          <label htmlFor="out_of_stock_only" className="cursor-pointer select-none text-sm">
-            Show out of stock only
-          </label>
-        </div>
-      </div>
-    </div>
-  );
+	return (
+		<div className="flex w-1/4 flex-col gap-y-4">
+			<Button asChild variant="green" className="w-full">
+				<Link href="/admin/new/product">New Product</Link>
+			</Button>
+			<Button onClick={handleResetFilters} className="w-full" variant="outline">
+				Reset all filters
+			</Button>
+			<label className="-mb-3 text-sm text-stone-500">Filters</label>
+			<Input
+				value={filters.search}
+				placeholder="Search products / boxes"
+				onChange={({ target }) => setFilters({ search: target.value })}
+			/>
+			<div className="flex flex-col gap-y-2 rounded-lg border p-4 mt-4">
+				<div className="flex justify-between items-center">
+					<p className="text-stone-500">Sort by price</p>
+					{(filters.sortByPrice === "asc" ||
+						filters.sortByPrice === "desc") && (
+						<Button
+							variant="link"
+							size="sm"
+							onClick={resetSortByPrice}
+							className="text-[10px] text-gray-500 hover:text-blue-500 cursor-pointer p-0 h-auto"
+						>
+							Reset
+						</Button>
+					)}
+				</div>
+				<div className="flex items-center gap-x-2">
+					<input
+						type="radio"
+						id="low_to_high"
+						name="sortByPrice"
+						value="asc"
+						checked={filters.sortByPrice === "asc"}
+						onChange={() => toggleSortByPrice("asc")}
+					/>
+					<label
+						htmlFor="low_to_high"
+						className="cursor-pointer select-none text-sm"
+					>
+						Low to High
+					</label>
+				</div>
+				<div className="flex items-center gap-x-2">
+					<input
+						type="radio"
+						id="high_to_low"
+						name="sortByPrice"
+						value="desc"
+						checked={filters.sortByPrice === "desc"}
+						onChange={() => toggleSortByPrice("desc")}
+					/>
+					<label
+						htmlFor="high_to_low"
+						className="cursor-pointer select-none text-sm"
+					>
+						High to Low
+					</label>
+				</div>
+			</div>
+			<div className="flex flex-col gap-y-2 rounded-lg border p-4 mt-4">
+				<div className="flex justify-between items-center">
+					<p className="text-stone-500">Sort by quantity</p>
+					{(filters.sortByQuantity === "asc" ||
+						filters.sortByQuantity === "desc") && (
+						<Button
+							variant="link"
+							size="sm"
+							onClick={resetSortByQuantity}
+							className="text-[10px] text-gray-500 hover:text-blue-500 cursor-pointer p-0 h-auto"
+						>
+							Reset
+						</Button>
+					)}
+				</div>
+				<div className="flex items-center gap-x-2">
+					<input
+						type="radio"
+						id="low_to_high_quantity"
+						name="sortByQuantity"
+						value="asc"
+						checked={filters.sortByQuantity === "asc"}
+						onChange={() => toggleSortByQuantity("asc")}
+					/>
+					<label
+						htmlFor="low_to_high_quantity"
+						className="cursor-pointer select-none text-sm"
+					>
+						Low to High
+					</label>
+				</div>
+				<div className="flex items-center gap-x-2">
+					<input
+						type="radio"
+						id="high_to_low_quantity"
+						name="sortByQuantity"
+						value="desc"
+						checked={filters.sortByQuantity === "desc"}
+						onChange={() => toggleSortByQuantity("desc")}
+					/>
+					<label
+						htmlFor="high_to_low_quantity"
+						className="cursor-pointer select-none text-sm"
+					>
+						High to Low
+					</label>
+				</div>
+			</div>
+			<div className="flex flex-col gap-y-2 rounded-lg border p-4 mt-4">
+				<div className="flex justify-between items-center">
+					<p className="text-stone-500">Filter by quantity</p>
+					{(filters.minQuantity !== undefined ||
+						filters.maxQuantity !== undefined) && (
+						<Button
+							variant="link"
+							size="sm"
+							onClick={resetQuantityFilter}
+							className="text-[10px] text-gray-500 hover:text-blue-500 cursor-pointer p-0 h-auto"
+						>
+							Reset
+						</Button>
+					)}
+				</div>
+				<div className="flex gap-x-4">
+					<div className="flex flex-col">
+						<label
+							htmlFor="minQuantity"
+							className="text-xs text-stone-500 mb-1"
+						>
+							Min
+						</label>
+						<Input
+							type="text"
+							id="minQuantity"
+							value={
+								filters.minQuantity !== undefined
+									? filters.minQuantity.toString()
+									: ""
+							}
+							onChange={({ target }) =>
+								handleQuantityChange("minQuantity", target.value)
+							}
+							className="w-20 h-10 text-center focus:outline-dashed focus:outline-2 focus:outline-gray-400"
+						/>
+					</div>
+					<div className="flex flex-col">
+						<label
+							htmlFor="maxQuantity"
+							className="text-xs text-stone-500 mb-1"
+						>
+							Max
+						</label>
+						<Input
+							type="text"
+							id="maxQuantity"
+							value={
+								filters.maxQuantity !== undefined
+									? filters.maxQuantity.toString()
+									: ""
+							}
+							onChange={({ target }) =>
+								handleQuantityChange("maxQuantity", target.value)
+							}
+							className="w-20 h-10 text-center focus:outline-dashed focus:outline-2 focus:outline-gray-400"
+						/>
+					</div>
+				</div>
+			</div>
+			<div className="flex flex-col gap-y-2 rounded-lg border p-4 mt-4">
+				<div className="flex justify-between items-center">
+					<p className="text-stone-500">Show products by stock</p>
+					{(filters.onlyInStock || filters.onlyOutOfStock) && (
+						<Button
+							variant="link"
+							size="sm"
+							onClick={resetStockFilter}
+							className="text-[10px] text-gray-500 hover:text-blue-500 cursor-pointer p-0 h-auto"
+						>
+							Reset
+						</Button>
+					)}
+				</div>
+				<div className="flex items-center gap-x-2">
+					<input
+						type="radio"
+						id="in_stock_only"
+						name="stockFilter"
+						value="onlyInStock"
+						checked={filters.onlyInStock}
+						onChange={() => toggleStockFilters("onlyInStock", true)}
+					/>
+					<label
+						htmlFor="in_stock_only"
+						className="cursor-pointer select-none text-sm"
+					>
+						Show in stock only
+					</label>
+				</div>
+				<div className="flex items-center gap-x-2">
+					<input
+						type="radio"
+						id="out_of_stock_only"
+						name="stockFilter"
+						value="onlyOutOfStock"
+						checked={filters.onlyOutOfStock}
+						onChange={() => toggleStockFilters("onlyOutOfStock", true)}
+					/>
+					<label
+						htmlFor="out_of_stock_only"
+						className="cursor-pointer select-none text-sm"
+					>
+						Show out of stock only
+					</label>
+				</div>
+			</div>
+		</div>
+	);
 }
