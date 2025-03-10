@@ -4,7 +4,7 @@ import Link from "next/link";
 export const PurchaseRow = ({ purchase }: { purchase: Purchase }) => {
   return (
     <div
-      key={purchase.purchaseId}
+      key={`purchase-${purchase.purchaseId}`}
       className="inline-grid w-full cursor-pointer grid-cols-5 border-b border-gray-200 px-4 py-3 transition-all hover:bg-stone-100"
     >
       <div className="whitespace-nowrap">
