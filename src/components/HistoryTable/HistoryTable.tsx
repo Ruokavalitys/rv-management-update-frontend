@@ -51,9 +51,9 @@ function HistoryTable({
         }
         {filteredData.map((transaction) =>
           isPurchase(transaction) ? (
-            <PurchaseRow key={transaction.purchaseId} purchase={transaction} />
+            <PurchaseRow key={`purchase-${transaction.purchaseId}`} purchase={transaction} />
           ) : isDeposit(transaction) ? (
-            <DepositRow key={transaction.depositId} deposit={transaction} />
+            <DepositRow key={`deposit-${transaction.depositId}`} deposit={transaction} />
           ) : null,
         )}
       </div>

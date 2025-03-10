@@ -9,7 +9,7 @@ const depositTypeMapping: { [key: number]: string } = {
 export const DepositRow = ({ deposit }: { deposit: Deposit }) => {
   return (
     <div
-      key={deposit.depositId}
+      key={`deposit-${deposit.depositId}`}
       className="inline-grid w-full cursor-pointer grid-cols-5 border-b border-gray-200 px-4 py-3 transition-all hover:bg-stone-100"
     >
       <div className="whitespace-nowrap">
