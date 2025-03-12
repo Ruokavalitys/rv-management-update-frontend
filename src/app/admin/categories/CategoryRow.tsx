@@ -120,15 +120,17 @@ export const CategoryRow = ({
 	}, [state.success, state.updatedCategory]);
 
 	const handleSave = () => {
-		oldDescriptionRef.current = category.description;
+    oldDescriptionRef.current = category.description;
 
-		updateCategory(
-			new FormData(
-				document.getElementById(`category-form-${category.categoryId}`),
-			),
-		);
-		setOpenDialog(false);
-	};
+    const formElement = document.getElementById(`category-form-${category.categoryId}`);
+
+    if (formElement instanceof HTMLFormElement) {
+        updateCategory(new FormData(formElement));
+        setOpenDialog(false);
+    } else {
+        console.error("Form element not found:", `category-form-${category.categoryId}`);
+    }
+};
 
 	const isDefaultCategory = category.categoryId === 0;
 
