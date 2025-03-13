@@ -4,12 +4,11 @@ import { login } from "./fixtures/login";
 test.describe('UserView Role Change', () => {
   test.beforeEach(async ({ page }) => {
     await login(page);
-    await page.goto('/admin/users/1');
+    await page.goto('/admin/users/2');
   });
 
   test('should change role to admin when "Make Admin" button is clicked', async ({ page }) => {
-    const makeAdminButton = await page.locator('button:has-text("Make Admin")');
-    await makeAdminButton.click();
+    await page.getByLabel("Make Admin").click();
 
     const roleText = await page.locator('#role');
     await expect(roleText).toHaveText('ADMIN');
