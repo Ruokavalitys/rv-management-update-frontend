@@ -1,11 +1,12 @@
 "use client";
-
+ 
 import { useToast } from "@/components/ui/use-toast";
 import { currencyFormatter } from "@/lib/moneyFormatter";
 import { isDeposit, isPurchase } from "@/lib/transactions";
 import { merge } from "@/lib/utils";
 import { Deposit, Purchase } from "@/server/requests/historyRequests";
 import { UserRole } from "@/server/requests/types";
+
 import { Copy, Eye, EyeOff, Lock } from "lucide-react";
 
 import {
@@ -25,6 +26,7 @@ export const UserView = ({
 	depositHistory: Omit<Deposit, "user">[];
 	purchaseHistory: Omit<Purchase, "user">[];
 }) => {
+
 	const { toast } = useToast();
 	const [password, setPassword] = useState("");
 	const [confirmPassword, setConfirmPassword] = useState("");
