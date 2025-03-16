@@ -2,13 +2,14 @@ import { auth, signOut } from "@/auth";
 import { NavButton } from "@/components/NavButton";
 import { SubmitButton } from "@/components/ui/submit-button";
 import {
-	BookUser,
-	FileClock,
-	LogOut,
-	PackagePlus,
-	PackageSearch,
-	Settings2,
-	Tags,
+  BarChart3,
+  BookUser,
+  FileClock,
+  LogOut,
+  PackagePlus,
+  PackageSearch,
+  Settings2,
+  Tags,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -38,6 +39,11 @@ const routes = [
 		href: "/admin/categories",
 		title: "Categories",
 		icon: <Tags />,
+	},
+	{
+		href: "/admin/reports",
+		title: "Reports",
+		icon: <BarChart3 />,
 	},
 	{
 		href: "/admin/configuration",
