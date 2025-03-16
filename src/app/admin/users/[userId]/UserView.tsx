@@ -36,7 +36,6 @@ export const UserView = ({
 	depositHistory: Omit<Deposit, "user">[];
 	purchaseHistory: Omit<Purchase, "user">[];
 }) => {
-
 	const { toast } = useToast();
 	const router = useRouter();
 	const [currentUsername, setCurrentUsername] = useState<string | null>(null);
@@ -233,7 +232,7 @@ export const UserView = ({
 					<div className="flex flex-col">
 						<button
 							onClick={() => setIsPasswordModalOpen(true)}
-							className="mt-2 p-2 bg-transparent text-gray-400 border border-gray-300 rounded hover:text-black flex items-center gap-2"
+							className="mt-2 px-3 py-1.5 bg-white border border-gray-300 rounded text-gray-400 hover:text-black hover:bg-gray-100 flex items-center justify-between w-full transition-colors duration-200"
 						>
 							<span>Change password</span>
 							<Lock width={20} height={20} />
