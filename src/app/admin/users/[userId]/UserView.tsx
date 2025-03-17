@@ -163,6 +163,16 @@ export const UserView = ({
 		setIsRoleModalOpen(true);
 	};
 
+	const formatDateTime = (date: Date) => {
+		const day = String(date.getDate()).padStart(2, "0");
+		const month = String(date.getMonth() + 1).padStart(2, "0");
+		const year = date.getFullYear();
+		const hours = String(date.getHours()).padStart(2, "0");
+		const minutes = String(date.getMinutes()).padStart(2, "0");
+		const seconds = String(date.getSeconds()).padStart(2, "0");
+		return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
+	};
+
 	return (
 		<div className="flex h-full w-full flex-col gap-y-4">
 			<div className="flex h-full w-full gap-4 divide-x">
@@ -284,7 +294,7 @@ export const UserView = ({
 						{transactions.map((transaction) => (
 							<>
 								<p className="text-right">
-									{new Date(transaction.time).toLocaleDateString("fi-FI")}
+									{formatDateTime(new Date(transaction.time))}
 								</p>
 								{isPurchase(transaction) && transaction.price > 0 && (
 									<>
