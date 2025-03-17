@@ -42,7 +42,6 @@ export default function ProductFilters() {
 		});
 	};
 
-	// Remove handleResetFilters, just reset directly
 	const handleResetFilters = () => {
 		resetFilters();
 	};
@@ -204,7 +203,7 @@ export default function ProductFilters() {
 							Min
 						</label>
 						<Input
-							type="text"
+							type="number"
 							id="minQuantity"
 							value={
 								filters.minQuantity !== undefined
@@ -214,7 +213,7 @@ export default function ProductFilters() {
 							onChange={({ target }) =>
 								handleQuantityChange("minQuantity", target.value)
 							}
-							className="w-20 h-10 text-center focus:outline-dashed focus:outline-2 focus:outline-gray-400"
+							className="w-20 h-10 text-center focus:outline-dashed focus:outline-2 focus:outline-gray-400 [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield]"
 						/>
 					</div>
 					<div className="flex flex-col">
@@ -225,7 +224,7 @@ export default function ProductFilters() {
 							Max
 						</label>
 						<Input
-							type="text"
+							type="number"
 							id="maxQuantity"
 							value={
 								filters.maxQuantity !== undefined
@@ -235,7 +234,7 @@ export default function ProductFilters() {
 							onChange={({ target }) =>
 								handleQuantityChange("maxQuantity", target.value)
 							}
-							className="w-20 h-10 text-center focus:outline-dashed focus:outline-2 focus:outline-gray-400"
+							className="w-20 h-10 text-center focus:outline-dashed focus:outline-2 focus:outline-gray-400 [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield]"
 						/>
 					</div>
 				</div>
