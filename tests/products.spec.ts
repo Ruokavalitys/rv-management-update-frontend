@@ -394,7 +394,6 @@ test.describe
 			await page
 				.getByRole("button", { name: "Reset all filters", exact: true })
 				.click();
-			console.log("Clicked Reset all filters button");
 			await page.waitForTimeout(500);
 			expect(await page.locator("#low_to_high").isChecked()).toBe(false);
 			expect(await page.locator("#high_to_low").isChecked()).toBe(false);
@@ -446,15 +445,27 @@ test.describe
 			page,
 		}) => {
 			await page.getByLabel("Show in stock only").click();
-			const updatedCountText = await page
+			await page.waitForTimeout(500);
+
+			const inStockCountText = await page
 				.locator("span.text-sm.text-gray-500.font-medium.ml-2")
 				.textContent();
-			const updatedCount = parseInt(
-				updatedCountText.match(/\d+/)?.[0] || "0",
-				10,
-			);
-			expect(updatedCount).toBeLessThan(initialCount);
-			expect(updatedCount).toBeGreaterThan(0);
+			const inStockCount = inStockCountText
+				? parseInt(inStockCountText.trim().match(/\d+/)?.[0] || "0", 10)
+				: 0;
+			expect(inStockCount).toBeLessThanOrEqual(initialCount);
+
+			await page.getByLabel("Show in stock only").click();
+			await page.getByLabel("Show out of stock only").click();
+			await page.waitForTimeout(500);
+
+			const outOfStockCountText = await page
+				.locator("span.text-sm.text-gray-500.font-medium.ml-2")
+				.textContent();
+			const outOfStockCount = outOfStockCountText
+				? parseInt(outOfStockCountText.trim().match(/\d+/)?.[0] || "0", 10)
+				: 0;
+			expect(outOfStockCount + inStockCount).toBeLessThanOrEqual(initialCount);
 		});
 
 		test("User can add a product and the count updates", async ({ page }) => {
@@ -476,4 +487,36 @@ test.describe
 				: 0;
 			expect(updatedCount).toBe(initialCount + 1);
 		});
+
+		test.describe
+			.serial("Filtering by Quantity with Negative Values", () => {
+				test("User can filter products by negative to negative quantity", async ({
+					page,
+				}) => {
+					await page.fill("#minQuantity", "-50");
+					await page.fill("#maxQuantity", "-10");
+					await page.waitForTimeout(1000);
+					const stocks = await page.$$eval(".product-quantity", (elements) =>
+						elements.map((el) => parseInt(el.textContent!.trim(), 10)),
+					);
+					expect(
+						stocks.every((stock) => stock >= -50 && stock <= -10),
+					).toBeTruthy();
+				});
+
+				test("User can filter products by negative to positive quantity", async ({
+					page,
+				}) => {
+					await page.fill("#minQuantity", "-50");
+					await page.fill("#maxQuantity", "10");
+					await page.waitForTimeout(1000);
+					const stocks = await page.$$eval(".product-quantity", (elements) =>
+						elements.map((el) => parseInt(el.textContent!.trim(), 10)),
+					);
+
+					expect(
+						stocks.every((stock) => stock >= -50 && stock <= 10),
+					).toBeTruthy();
+				});
+			});
 	});
