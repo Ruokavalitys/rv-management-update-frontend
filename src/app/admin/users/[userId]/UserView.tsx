@@ -11,6 +11,7 @@ import {
 	AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useToast } from "@/components/ui/use-toast";
+import { formatDateTime } from "@/lib/dateUtils";
 import { currencyFormatter } from "@/lib/moneyFormatter";
 import { isDeposit, isPurchase } from "@/lib/transactions";
 import { merge } from "@/lib/utils";
@@ -240,7 +241,7 @@ export const UserView = ({
 					</div>
 				</div>
 
-				<div className="flex h-full w-full flex-col overflow-clip px-4">
+				<div className="flex h-full w-full flex-col overflow-clip px-4 space-y-2">
 					<div className="mb-2 flex gap-4 text-xl font-semibold">
 						<h2
 							className={merge(
@@ -276,19 +277,19 @@ export const UserView = ({
 					<div
 						className={merge(
 							"grid h-full auto-rows-max gap-x-4 gap-y-1 overflow-y-scroll pr-4",
-							view === "deposits"
-								? "grid-cols-[max-content_max-content_min-content_max-content_max-content]"
+							view === "deposits" || view === "combined"
+								? "grid-cols-[max-content_max-content_auto_max-content_max-content]"
 								: "grid-cols-[max-content_max-content_auto_max-content_max-content]",
 						)}
 					>
 						{transactions.map((transaction) => (
 							<>
 								<p className="text-right">
-									{new Date(transaction.time).toLocaleDateString("fi-FI")}
+									{formatDateTime(new Date(transaction.time))}
 								</p>
 								{isPurchase(transaction) && transaction.price > 0 && (
 									<>
-										<p>Bought</p>
+										<p>Purchased</p>
 										<Link
 											href={`/admin/products/${transaction.product.barcode}`}
 										>
@@ -319,8 +320,7 @@ export const UserView = ({
 								{isDeposit(transaction) && (
 									<>
 										<p>Deposited</p>
-										<p></p>
-										<p className="font-mono text-green-700">+</p>
+										<p></p> <p className="font-mono text-green-700">+</p>
 										<p className="text-right font-mono text-green-700">
 											{currencyFormatter.format(transaction.amount / 100)}
 										</p>
