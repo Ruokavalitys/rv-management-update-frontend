@@ -1,3 +1,4 @@
+import { formatDateTime } from "@/lib/dateUtils";
 import { Deposit } from "@/server/requests/historyRequests";
 
 const depositTypeMapping: { [key: number]: string } = {
@@ -7,20 +8,10 @@ const depositTypeMapping: { [key: number]: string } = {
 };
 
 export const DepositRow = ({ deposit }: { deposit: Deposit }) => {
-	const formatDateTime = (date: Date) => {
-		const day = String(date.getDate()).padStart(2, "0");
-		const month = String(date.getMonth() + 1).padStart(2, "0");
-		const year = date.getFullYear();
-		const hours = String(date.getHours()).padStart(2, "0");
-		const minutes = String(date.getMinutes()).padStart(2, "0");
-		const seconds = String(date.getSeconds()).padStart(2, "0");
-		return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
-	};
-
 	return (
 		<div
 			key={`deposit-${deposit.depositId}`}
-			className="inline-grid w-full cursor-pointer grid-cols-5 px-4 py-4 transition-all hover:bg-green-50 border-l-2 border-green-700"
+			className="inline-grid w-full cursor-pointer grid-cols-5 px-4 py-4 transition-all hover:bg-green-50 border-l-[1.7px] border-green-600"
 		>
 			<div className="whitespace-nowrap">
 				<h3 className="text-lg font-semibold text-black">
