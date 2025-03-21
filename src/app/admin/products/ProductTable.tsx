@@ -16,6 +16,7 @@ export const productFiltersAtom = atomWithReset({
 	maxQuantity: undefined as number | undefined,
 	sortByPrice: "",
 	sortByQuantity: "",
+	regex: "",
 });
 
 interface ProductTableProps {
@@ -47,7 +48,23 @@ const ProductTable: React.FC<ProductTableProps> = ({
 				(filters.maxQuantity === undefined ||
 					product.stock <= filters.maxQuantity);
 
-			return matchesSearch && matchesStock && matchesQuantity;
+			let matchesRegex = true;
+			if (filters.regex) {
+				try {
+					const regex = new RegExp(filters.regex, "i");
+					const stockStr = product.stock.toString();
+					const priceStr = (product.sellPrice / 100).toFixed(2);
+					matchesRegex =
+						regex.test(product.name) ||
+						regex.test(product.barcode) ||
+						regex.test(stockStr) ||
+						regex.test(priceStr);
+				} catch (e) {
+					matchesRegex = false;
+				}
+			}
+
+			return matchesSearch && matchesStock && matchesQuantity && matchesRegex;
 		});
 	}, [products, filters]);
 
@@ -90,19 +107,25 @@ const ProductTable: React.FC<ProductTableProps> = ({
 						>
 							<div className="flex cursor-pointer justify-between border-b border-gray-200 px-4 py-3 transition-all hover:bg-stone-100">
 								<div className="flex min-h-full w-1/3 flex-col justify-between whitespace-nowrap">
-									<h3 className="text-lg font-semibold">{product.name}</h3>
-									<p className="text-sm text-stone-500">{product.barcode}</p>
+									<h3 className="text-[16.74px] font-semibold">
+										{product.name}
+									</h3>
+									<p className="text-[13.02px] text-stone-500">
+										{product.barcode}
+									</p>
 								</div>
 								<div className="flex flex-col items-end">
-									<p className="text-lg text-stone-500">
+									<p className="text-[16.74px] text-stone-500">
 										<span
-											className={`font-semibold ${product.stock < 0 ? "text-red-500" : "text-black"}`}
+											className={`font-semibold ${
+												product.stock < 0 ? "text-red-500" : "text-black"
+											}`}
 										>
 											{product.stock}
 										</span>{" "}
 										pcs
 									</p>
-									<p className="text-lg text-stone-500">
+									<p className="text-[16.74px] text-stone-500">
 										{currencyFormatter.format(product.buyPrice / 100)} →{" "}
 										<span className="font-semibold text-black">
 											{currencyFormatter.format(product.sellPrice / 100)}

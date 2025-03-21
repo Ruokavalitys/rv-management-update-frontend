@@ -69,6 +69,10 @@ export default function ProductFilters() {
 		setFilters({ [field]: numericValue });
 	};
 
+	const handleRegexChange = (value: string) => {
+		setFilters({ regex: value });
+	};
+
 	return (
 		<div className="flex w-1/4 flex-col gap-y-4">
 			<Button asChild variant="green" className="w-full">
@@ -83,6 +87,15 @@ export default function ProductFilters() {
 				placeholder="Search products / boxes"
 				onChange={({ target }) => setFilters({ search: target.value })}
 			/>
+			<div className="flex flex-col gap-y-2">
+				<div className="flex justify-between items-center">
+					<Input
+						value={filters.regex}
+						placeholder="Search with Regex (e.g., ^A.*$)"
+						onChange={({ target }) => handleRegexChange(target.value)}
+					/>
+				</div>
+			</div>
 			<div className="flex flex-col gap-y-2 rounded-lg border p-4 mt-4">
 				<div className="flex justify-between items-center">
 					<p className="text-stone-500">Sort by price</p>
