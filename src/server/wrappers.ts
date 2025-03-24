@@ -3,33 +3,60 @@
 import { auth } from "@/auth";
 
 export async function authenticated<TResponse>(
-  url: string,
-  config: RequestInit = {},
-  body?: Record<string, unknown>,
+	url: string,
+	config: RequestInit = {},
+	body?: Record<string, unknown>,
 ): Promise<TResponse> {
-  const session = await auth();
-  if (!session?.user) {
-    throw new Error("Not authenticated");
-  }
-  const response = await fetch(url, {
-    headers: {
-      Authorization: `Bearer ${session.user.accessToken}`,
-      "Content-Type": "application/json",
-      ...config.headers,
-    },
-    body: body && JSON.stringify(body),
-    ...config,
-  });
-  if (!response.ok) {
-    throw new Error(`Request failed: ${response.statusText}`);
-  }
-  if (response.headers.get("Content-Type")?.startsWith("application/json")) {
-    const data = response.json();
-    return data as Promise<TResponse>;
-  }
-  if (response.headers.get("Content-Type")?.startsWith("text/plain")) {
-    const data = response.text();
-    return data as Promise<TResponse>;
-  }
-  throw new Error("Unsupported content type");
+	const session = await auth();
+	if (!session?.user) {
+		throw new Error("Not authenticated");
+	}
+
+	const cleanedConfig: RequestInit = {
+		...config,
+		next: config.next
+			? {
+					...config.next,
+					tags: Array.isArray(config.next.tags)
+						? config.next.tags.filter((tag) => typeof tag === "string")
+						: undefined,
+				}
+			: undefined,
+	};
+
+	const response = await fetch(url, {
+		headers: {
+			Authorization: `Bearer ${session.user.accessToken}`,
+			"Content-Type": "application/json",
+			...config.headers,
+		},
+		body: body && JSON.stringify(body),
+		...cleanedConfig,
+	});
+	if (!response.ok) {
+		throw new Error(`Request failed: ${response.statusText}`);
+	}
+
+	const contentType = response.headers.get("Content-Type");
+
+	if (contentType?.includes("application/json")) {
+		const data = await response.json();
+		return data as TResponse;
+	}
+
+	if (contentType?.includes("text/plain")) {
+		const data = await response.text();
+		return data as TResponse;
+	}
+
+	try {
+		const text = await response.text();
+		if (!text) {
+			return { success: true } as TResponse;
+		}
+		const data = JSON.parse(text);
+		return data as TResponse;
+	} catch (error) {
+		throw new Error("Unsupported content type or invalid response format");
+	}
 }
