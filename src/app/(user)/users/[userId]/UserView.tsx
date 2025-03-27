@@ -220,7 +220,7 @@ export const UserView = ({
 									</p>
 									{isPurchase(transaction) && transaction.price > 0 && (
 										<>
-											<p>Purchased</p>
+											<p>Purchase</p>
 											<p>{transaction.product?.name ?? "Unknown Product"}</p>
 											<p className="font-mono text-red-600">-</p>
 											<p className="text-right font-mono text-red-600">
@@ -242,7 +242,7 @@ export const UserView = ({
 									)}
 									{isDeposit(transaction) && (
 										<>
-											<p>Deposited</p>
+											<p>Deposit</p>
 											<p></p>
 											<p className="font-mono text-green-700">+</p>
 											<p className="text-right font-mono text-green-700">
