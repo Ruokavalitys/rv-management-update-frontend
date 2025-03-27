@@ -93,4 +93,40 @@ export async function getCurrentUserPurchases() {
 	).then((data) => data.purchases);
 }
 
+export async function getPagedDeposits(limit: number, offset: number) {
+  "use server";
+
+  return await authenticated<getAllDepositsResponse>(
+    `${process.env.RV_BACKEND_URL}/${depositsUrl}`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ limit, offset }),
+      next: {
+        tags: [QueryKeys.purchases],
+      },
+    },
+  ).then((data) => data.deposits);
+}
+
+export async function getPagedPurchases(limit: number, offset: number) {
+  "use server";
+
+  return await authenticated<getAllPurchasesResponse>(
+    `${process.env.RV_BACKEND_URL}/${depositsUrl}`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ limit, offset }),
+      next: {
+        tags: [QueryKeys.purchases],
+      },
+    },
+  ).then((data) => data.purchases);
+}
+
 export type Transaction = Partial<Deposit> | Partial<Purchase>;

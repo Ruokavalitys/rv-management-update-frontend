@@ -16,6 +16,7 @@ export default async function HistoryPage() {
 
 	return (
 		<>
+      <div>{combinedData.length} TOTAL LENGTH</div>
 			<HeaderTab tabs={historyTabs} selectedTab="Overview" />
 			<div className="flex h-full min-h-0 w-full flex-row justify-between gap-x-8">
 				<TableAndFilter initialData={combinedData} />
