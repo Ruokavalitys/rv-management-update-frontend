@@ -2,26 +2,29 @@
 
 import { Transaction } from "@/server/requests/historyRequests";
 import { atomWithReset } from "jotai/utils";
-import HistoryTable from "./HistoryTable";
 import Filter from "./Filter";
+import HistoryTable from "./HistoryTable";
 
 export const TableAndFilter = ({
-  initialData,
+	initialData,
 }: {
-  initialData: Transaction[];
+	initialData: Transaction[];
 }) => {
-  const purchaseFiltersAtom = atomWithReset({
-    username: "",
-    fullName: "",
-  });
+	const purchaseFiltersAtom = atomWithReset({
+		search: "",
+		fromDate: undefined as string | undefined,
+		toDate: undefined as string | undefined,
+	});
 
-  return (
-    <>
-      <HistoryTable
-        filtersAtom={purchaseFiltersAtom}
-        initialData={initialData}
-      />
-      <Filter filtersAtom={purchaseFiltersAtom} />
-    </>
-  );
+	return (
+		<div className="flex h-full min-h-0 w-full flex-row justify-between gap-x-8">
+			<div className="w-full">
+				<HistoryTable
+					filtersAtom={purchaseFiltersAtom}
+					initialData={initialData}
+				/>
+			</div>
+			<Filter filtersAtom={purchaseFiltersAtom} />
+		</div>
+	);
 };
