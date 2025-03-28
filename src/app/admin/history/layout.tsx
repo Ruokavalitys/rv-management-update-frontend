@@ -4,6 +4,7 @@ export const historyTabs: HeaderTabs = {
   Overview: { href: "/admin/history" },
   Deposits: { href: "/admin/history/deposits" },
   Purchases: { href: "/admin/history/purchases" },
+  Returns: { href: "/admin/history/returns" },
 };
 
 async function HistoryLayout({ children }: { children: React.ReactNode }) {

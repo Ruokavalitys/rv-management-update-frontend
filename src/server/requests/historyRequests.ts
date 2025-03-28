@@ -43,6 +43,9 @@ export type Purchase = {
   product: Product;
   user: User;
   returned: boolean;
+  returnedTime: string;
+  returnedBalanceAfter: number;
+  isReturnAction: boolean;
 };
 export type getAllPurchasesResponse = {
   purchases: Purchase[];
