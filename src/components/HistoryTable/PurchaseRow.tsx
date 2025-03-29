@@ -6,7 +6,7 @@ export const PurchaseRow = ({ purchase }: { purchase: Purchase }) => {
 	return (
 		<div
 			key={`purchase-${purchase.purchaseId}`}
-			className="inline-grid w-full cursor-pointer grid-cols-5 px-4 py-4 transition-all hover:bg-red-50 border-l-[1.7px] border-red-600"
+			className="inline-grid w-full cursor-pointer grid-cols-5 px-4 py-4 transition-all hover:bg-red-50"
 		>
 			<div className="whitespace-nowrap">
 				<h3 className="text-lg font-semibold text-black">

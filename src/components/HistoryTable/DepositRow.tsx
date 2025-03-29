@@ -11,7 +11,7 @@ export const DepositRow = ({ deposit }: { deposit: Deposit }) => {
 	return (
 		<div
 			key={`deposit-${deposit.depositId}`}
-			className="inline-grid w-full cursor-pointer grid-cols-5 px-4 py-4 transition-all hover:bg-green-50 border-l-[1.7px] border-green-600"
+			className="inline-grid w-full cursor-pointer grid-cols-5 px-4 py-4 transition-all hover:bg-green-50"
 		>
 			<div className="whitespace-nowrap">
 				<h3 className="text-lg font-semibold text-black">
@@ -27,11 +27,11 @@ export const DepositRow = ({ deposit }: { deposit: Deposit }) => {
 			</div>
 
 			<div className="place-self-center self-center">
-				<p className="text-green-700">Deposited</p>
+				<p className="text-green-700">Deposit</p>
 			</div>
 
 			<div className="place-self-center self-center">
-				<p>{depositTypeMapping[deposit.type]}</p>
+				<p></p>
 			</div>
 
 			<div className="flex flex-col items-end">
@@ -58,7 +58,7 @@ export const DepositRow = ({ deposit }: { deposit: Deposit }) => {
 				</p>
 				<p className="text-sm text-stone-500 text-black">
 					{deposit.user.email}
-				</p>{" "}
+				</p>
 			</div>
 		</div>
 	);

@@ -1,37 +1,54 @@
+// historyRequests.ts
 "use server";
 
-import { authenticated } from "@/server/wrappers";
 import { User } from "@/server/requests/userRequests";
-import { Product } from "./productRequests";
+import { authenticated } from "@/server/wrappers";
+import { AdminProduct } from "./productRequests";
 import { QueryKeys } from "./queryKeys";
 
-const depositsUrl = "api/v1/admin/depositHistory";
-const purchasesUrl = "api/v1/admin/purchaseHistory";
+const adminDepositsUrl = "api/v1/admin/depositHistory";
+const adminPurchasesUrl = "api/v1/admin/purchaseHistory";
+const userDepositsUrl = "api/v1/user/depositHistory";
+const userPurchasesUrl = "api/v1/user/purchaseHistory";
 
 export type Deposit = {
-  depositId: number;
-  time: string;
-  amount: number;
-  balanceAfter: number;
-  user: User;
-  type: number;
+	depositId: number;
+	time: string;
+	amount: number;
+	balanceAfter: number;
+	user: User;
+	type: number;
 };
 export type getAllDepositsResponse = {
-  deposits: Deposit[];
+	deposits: Deposit[];
 };
 
 export async function getAllDeposits() {
-  "use server";
+	"use server";
 
-  return await authenticated<getAllDepositsResponse>(
-    `${process.env.RV_BACKEND_URL}/${depositsUrl}`,
-    {
-      method: "GET",
-      next: {
-        tags: [QueryKeys.deposits],
-      },
-    },
-  ).then((data) => data.deposits);
+	return await authenticated<getAllDepositsResponse>(
+		`${process.env.RV_BACKEND_URL}/${adminDepositsUrl}`,
+		{
+			method: "GET",
+			next: {
+				tags: [QueryKeys.deposits],
+			},
+		},
+	).then((data) => data.deposits);
+}
+
+export async function getCurrentUserDeposits() {
+	"use server";
+
+	return await authenticated<{ deposits: Omit<Deposit, "user">[] }>(
+		`${process.env.RV_BACKEND_URL}/${userDepositsUrl}`,
+		{
+			method: "GET",
+			next: {
+				tags: [QueryKeys.deposits],
+			},
+		},
+	).then((data) => data.deposits);
 }
 
 export type Purchase = {
@@ -40,7 +57,7 @@ export type Purchase = {
   price: number;
   balanceAfter: number;
   stockAfter: number;
-  product: Product;
+  product: AdminProduct;
   user: User;
   returned: boolean;
   returnedTime: string;
@@ -48,21 +65,35 @@ export type Purchase = {
   isReturnAction: boolean;
 };
 export type getAllPurchasesResponse = {
-  purchases: Purchase[];
+	purchases: Purchase[];
 };
 
 export async function getAllPurchases() {
-  "use server";
+	"use server";
 
-  return await authenticated<getAllPurchasesResponse>(
-    `${process.env.RV_BACKEND_URL}/${purchasesUrl}`,
-    {
-      method: "GET",
-      next: {
-        tags: [QueryKeys.purchases],
-      },
-    },
-  ).then((data) => data.purchases);
+	return await authenticated<getAllPurchasesResponse>(
+		`${process.env.RV_BACKEND_URL}/${adminPurchasesUrl}`,
+		{
+			method: "GET",
+			next: {
+				tags: [QueryKeys.purchases],
+			},
+		},
+	).then((data) => data.purchases);
+}
+
+export async function getCurrentUserPurchases() {
+	"use server";
+
+	return await authenticated<{ purchases: Omit<Purchase, "user">[] }>(
+		`${process.env.RV_BACKEND_URL}/${userPurchasesUrl}`,
+		{
+			method: "GET",
+			next: {
+				tags: [QueryKeys.purchases],
+			},
+		},
+	).then((data) => data.purchases);
 }
 
 export type Transaction = Partial<Deposit> | Partial<Purchase>;
