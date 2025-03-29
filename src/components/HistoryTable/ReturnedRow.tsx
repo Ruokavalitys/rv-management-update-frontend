@@ -6,7 +6,7 @@ export const ReturnedRow = ({ purchase }: { purchase: Purchase }) => {
 	return (
 		<div
       key={`return-${purchase.purchaseId}`}
-			className="inline-grid w-full cursor-pointer grid-cols-5 px-4 py-4 transition-all hover:bg-blue-50 border-l-[1.7px] border-blue-600"
+			className="inline-grid w-full cursor-pointer grid-cols-5 px-4 py-4 transition-all hover:bg-blue-50"
 		>
 			<div className="whitespace-nowrap">
 				<h3 className="text-lg font-semibold text-black">
@@ -38,19 +38,19 @@ export const ReturnedRow = ({ purchase }: { purchase: Purchase }) => {
 				<p className="text-sm text-stone-300">
 					<span
 						className={`font-semibold ${
-              purchase.returnedBalanceAfter - purchase.price < 0 ? "text-red-500" : ""
-            }`}
+              				purchase.returnedBalanceAfter - purchase.price < 0 ? "text-red-500" : ""
+            			}`}
 					>
 						{((purchase.returnedBalanceAfter - purchase.price) / 100).toFixed(2)} €
 					</span>{" "}
 					<span className="text-lg font-semibold text-blue-600">
-            + {(purchase.price / 100).toFixed(2)} €
+            			+ {(purchase.price / 100).toFixed(2)} €
 					</span>{" "}
 					={" "}
 					<span
 						className={`font-semibold ${
-              purchase.returnedBalanceAfter < 0 ? "text-red-500" : ""
-            }`}
+              				purchase.returnedBalanceAfter < 0 ? "text-red-500" : ""
+            			}`}
 					>
 						{(purchase.returnedBalanceAfter / 100).toFixed(2)}
 					</span>{" "}
