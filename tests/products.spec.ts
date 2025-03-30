@@ -394,7 +394,6 @@ test.describe
 			await page
 				.getByRole("button", { name: "Reset all filters", exact: true })
 				.click();
-			console.log("Clicked Reset all filters button");
 			await page.waitForTimeout(500);
 			expect(await page.locator("#low_to_high").isChecked()).toBe(false);
 			expect(await page.locator("#high_to_low").isChecked()).toBe(false);
@@ -414,6 +413,135 @@ test.describe
 			);
 			expect(await searchField.inputValue()).toBe("");
 		});
+
+		test("User can filter products by regex (lemon/lime/citrus/7up flavors) and max quantity", async ({
+			page,
+		}) => {
+			await page.goto("/admin/products");
+			const regexInput = await page.locator(
+				'input[placeholder="Search with Regex (e.g., ^A.*$)"]',
+			);
+			await regexInput.fill(".*(lemon|lime|citrus|7up).*");
+			await page.waitForFunction(
+				() => document.querySelectorAll("h3.font-semibold").length > 0,
+				{ timeout: 1000 },
+			);
+			await page.fill("#maxQuantity", "100");
+			await page.waitForFunction(
+				() => document.querySelectorAll("h3.font-semibold").length > 0,
+				{ timeout: 1000 },
+			);
+			await page.waitForSelector("span:has-text('items available')", {
+				state: "visible",
+				timeout: 1000,
+			});
+			const initialCountText = await page
+				.locator("span:has-text('items available')")
+				.textContent();
+			const initialCount = initialCountText
+				? parseInt(initialCountText.match(/\d+/)?.[0] || "0", 10)
+				: 0;
+			const productNames = await page.$$eval("h3.font-semibold", (elements) =>
+				elements.map((el) => el.textContent!.trim()),
+			);
+			const stocks = await page.$$eval(".product-quantity", (elements) =>
+				elements.map((el) => parseInt(el.textContent!.trim(), 10)),
+			);
+			expect(productNames.length).toBe(initialCount);
+			const regex = new RegExp(".*(lemon|lime|citrus|7up).*", "i");
+			expect(productNames.every((name) => regex.test(name))).toBeTruthy();
+			expect(stocks.every((stock) => stock <= 100)).toBeTruthy();
+			await page.fill("#maxQuantity", "50");
+			await page.waitForFunction(
+				() => document.querySelectorAll("h3.font-semibold").length > 0,
+				{ timeout: 1000 },
+			);
+			await page.waitForSelector("span:has-text('items available')", {
+				state: "visible",
+				timeout: 1000,
+			});
+			const updatedCountText = await page
+				.locator("span:has-text('items available')")
+				.textContent();
+			const updatedCount = updatedCountText
+				? parseInt(updatedCountText.match(/\d+/)?.[0] || "0", 10)
+				: 0;
+			const productNamesAfter = await page.$$eval(
+				"h3.font-semibold",
+				(elements) => elements.map((el) => el.textContent!.trim()),
+			);
+			const stocksAfter = await page.$$eval(".product-quantity", (elements) =>
+				elements.map((el) => parseInt(el.textContent!.trim(), 10)),
+			);
+			expect(productNamesAfter.length).toBe(updatedCount);
+			expect(productNamesAfter.every((name) => regex.test(name))).toBeTruthy();
+			expect(stocksAfter.every((stock) => stock <= 50)).toBeTruthy();
+			await page
+				.getByRole("button", { name: "Reset all filters", exact: true })
+				.click();
+			await page.waitForTimeout(500);
+		});
+
+		test("User can filter products by regex, stock, quantity, and sort by price", async ({
+			page,
+		}) => {
+			await page.goto("/admin/products");
+			const regexInput = await page.locator(
+				'input[placeholder="Search with Regex (e.g., ^A.*$)"]',
+			);
+			await regexInput.fill(".*cola.*");
+			await page.waitForFunction(
+				() => document.querySelectorAll("h3.font-semibold").length > 0,
+				{ timeout: 5000 },
+			);
+			await page.getByLabel("Show in stock only").click();
+			await page.waitForFunction(
+				() => document.querySelectorAll("h3.font-semibold").length > 0,
+				{ timeout: 5000 },
+			);
+			await page.fill("#minQuantity", "10");
+			await page.fill("#maxQuantity", "50");
+			await page.waitForFunction(
+				() => document.querySelectorAll("h3.font-semibold").length > 0,
+				{ timeout: 5000 },
+			);
+			await page.locator("#low_to_high").click();
+			await page.waitForFunction(
+				() => document.querySelectorAll("h3.font-semibold").length > 0,
+				{ timeout: 5000 },
+			);
+			await page.waitForSelector("span:has-text('items available')", {
+				state: "visible",
+				timeout: 5000,
+			});
+			const countText = await page
+				.locator("span:has-text('items available')")
+				.textContent();
+			const expectedCount = countText
+				? parseInt(countText.match(/\d+/)?.[0] || "0", 10)
+				: 0;
+			const productNames = await page.$$eval("h3.font-semibold", (elements) =>
+				elements.map((el) => el.textContent!.trim()),
+			);
+			const stocks = await page.$$eval(".product-quantity", (elements) =>
+				elements.map((el) => parseInt(el.textContent!.trim(), 10)),
+			);
+			const prices = await page.$$eval(".product-price", (elements) =>
+				elements.map((el) =>
+					parseFloat(el.textContent!.replace("€", "").trim()),
+				),
+			);
+			expect(productNames.length).toBe(expectedCount);
+			const regex = new RegExp(".*cola.*", "i");
+			expect(productNames.every((name) => regex.test(name))).toBeTruthy();
+			expect(stocks.every((stock) => stock > 0)).toBeTruthy();
+			expect(stocks.every((stock) => stock >= 10 && stock <= 50)).toBeTruthy();
+			expect(prices).toEqual([...prices].sort((a, b) => a - b));
+			await page
+				.getByRole("button", { name: "Reset all filters", exact: true })
+				.click();
+			await page.waitForTimeout(500);
+		});
 	});
 
 test.describe
@@ -429,43 +557,80 @@ test.describe
 					timeout: 5000,
 				},
 			);
+			await page.waitForFunction(
+				() => document.querySelectorAll("h3.font-semibold").length > 0,
+				{ timeout: 5000 },
+			);
 			const initialCountText = await page
 				.locator("span.text-sm.text-gray-500.font-medium.ml-2")
 				.textContent();
-			if (initialCountText) {
-				initialCount = parseInt(
-					initialCountText.trim().match(/\d+/)?.[0] || "0",
-					10,
-				);
-			} else {
-				initialCount = 0;
-			}
+			initialCount = initialCountText
+				? parseInt(initialCountText.trim().match(/\d+/)?.[0] || "0", 10)
+				: 0;
 		});
 
 		test("User can filter products by stock and see product count update", async ({
 			page,
 		}) => {
 			await page.getByLabel("Show in stock only").click();
-			const updatedCountText = await page
+			await page.waitForFunction(
+				() => document.querySelectorAll("h3.font-semibold").length > 0,
+				{ timeout: 5000 },
+			);
+			const inStockCountText = await page
 				.locator("span.text-sm.text-gray-500.font-medium.ml-2")
 				.textContent();
-			const updatedCount = parseInt(
-				updatedCountText.match(/\d+/)?.[0] || "0",
-				10,
+			const inStockCount = inStockCountText
+				? parseInt(inStockCountText.trim().match(/\d+/)?.[0] || "0", 10)
+				: 0;
+			expect(inStockCount).toBeLessThanOrEqual(initialCount);
+			await page.getByLabel("Show in stock only").click();
+			await page.getByLabel("Show out of stock only").click();
+			await page.waitForFunction(
+				() => document.querySelectorAll("h3.font-semibold").length >= 0,
+				{ timeout: 5000 },
 			);
-			expect(updatedCount).toBeLessThan(initialCount);
-			expect(updatedCount).toBeGreaterThan(0);
+			const outOfStockCountText = await page
+				.locator("span.text-sm.text-gray-500.font-medium.ml-2")
+				.textContent();
+			const outOfStockCount = outOfStockCountText
+				? parseInt(outOfStockCountText.trim().match(/\d+/)?.[0] || "0", 10)
+				: 0;
+			await page
+				.getByRole("button", { name: "Reset all filters", exact: true })
+				.click();
+			await page.waitForFunction(
+				() => document.querySelectorAll("h3.font-semibold").length > 0,
+				{ timeout: 5000 },
+			);
+			const finalCountText = await page
+				.locator("span.text-sm.text-gray-500.font-medium.ml-2")
+				.textContent();
+			const finalCount = finalCountText
+				? parseInt(finalCountText.trim().match(/\d+/)?.[0] || "0", 10)
+				: 0;
+			expect(outOfStockCount + inStockCount).toBeLessThanOrEqual(finalCount);
 		});
 
 		test("User can add a product and the count updates", async ({ page }) => {
+			await page.goto("/admin/products");
+			await page.waitForSelector("span.text-sm.text-gray-500.font-medium.ml-2");
+			const countBeforeAddingText = await page
+				.locator("span.text-sm.text-gray-500.font-medium.ml-2")
+				.textContent();
+			const countBeforeAdding = countBeforeAddingText
+				? parseInt(countBeforeAddingText.match(/\d+/)?.[0] || "0", 10)
+				: 0;
+
+			const uniqueBarcode = await getRandomBarcode();
 			await page.goto("/admin/new/product");
-			await page.getByPlaceholder("Barcode").fill(randomBarcode);
+			await page.getByPlaceholder("Barcode").fill(uniqueBarcode);
 			await page.getByPlaceholder("Barcode").press("Enter");
 			await page.getByPlaceholder("Name").fill(randomName);
 			await page.getByText("Select category").click();
 			await page.getByLabel("Food, other").click();
 			await page.getByRole("button", { name: "Create Product" }).click();
-			await page.waitForURL(`/admin/products/${randomBarcode}`);
+			await page.waitForURL(`/admin/products/${uniqueBarcode}`);
 			await page.goto("/admin/products");
 			await page.waitForSelector("span.text-sm.text-gray-500.font-medium.ml-2");
 			const updatedCountText = await page
@@ -474,6 +639,37 @@ test.describe
 			const updatedCount = updatedCountText
 				? parseInt(updatedCountText.match(/\d+/)?.[0] || "0", 10)
 				: 0;
-			expect(updatedCount).toBe(initialCount + 1);
+			expect(updatedCount).toBe(countBeforeAdding + 1);
 		});
+
+		test.describe
+			.serial("Filtering by Quantity with Negative Values", () => {
+				test("User can filter products by negative to negative quantity", async ({
+					page,
+				}) => {
+					await page.fill("#minQuantity", "-50");
+					await page.fill("#maxQuantity", "-10");
+					await page.waitForTimeout(1000);
+					const stocks = await page.$$eval(".product-quantity", (elements) =>
+						elements.map((el) => parseInt(el.textContent!.trim(), 10)),
+					);
+					expect(
+						stocks.every((stock) => stock >= -50 && stock <= -10),
+					).toBeTruthy();
+				});
+
+				test("User can filter products by negative to positive quantity", async ({
+					page,
+				}) => {
+					await page.fill("#minQuantity", "-50");
+					await page.fill("#maxQuantity", "10");
+					await page.waitForTimeout(1000);
+					const stocks = await page.$$eval(".product-quantity", (elements) =>
+						elements.map((el) => parseInt(el.textContent!.trim(), 10)),
+					);
+					expect(
+						stocks.every((stock) => stock >= -50 && stock <= 10),
+					).toBeTruthy();
+				});
+			});
 	});

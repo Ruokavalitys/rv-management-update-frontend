@@ -1,32 +1,22 @@
 "use client";
 
-import {
-	AlertDialog,
-	AlertDialogAction,
-	AlertDialogCancel,
-	AlertDialogContent,
-	AlertDialogDescription,
-	AlertDialogFooter,
-	AlertDialogHeader,
-	AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import { useToast } from "@/components/ui/use-toast";
 import { formatDateTime } from "@/lib/dateUtils";
 import { currencyFormatter } from "@/lib/moneyFormatter";
-import { isDeposit, isPurchase } from "@/lib/transactions";
 import { merge } from "@/lib/utils";
 import { Deposit, Purchase } from "@/server/requests/historyRequests";
-import { UserRole } from "@/server/requests/types";
-import {
-	User as UserType,
-	changePassword,
-	changeUserRole,
-} from "@/server/requests/userRequests";
+import { changePasswordForUser } from "@/server/requests/userRequests";
 import { Copy, Eye, EyeOff, Lock } from "lucide-react";
-import { signOut } from "next-auth/react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
+
+type UserType = {
+	userId: number;
+	username: string;
+	fullName: string;
+	email: string;
+	moneyBalance: number;
+	role: string;
+};
 
 export const UserView = ({
 	user,
@@ -38,45 +28,17 @@ export const UserView = ({
 	purchaseHistory: Omit<Purchase, "user">[];
 }) => {
 	const { toast } = useToast();
-	const router = useRouter();
-	const [currentUsername, setCurrentUsername] = useState<string | null>(null);
+
+	const [currentUsername, setCurrentUsername] = useState<string>("");
 	const [password, setPassword] = useState("");
 	const [confirmPassword, setConfirmPassword] = useState("");
-	const [role, setRole] = useState(user.role);
-	const [newRole, setNewRole] = useState<UserRole | "">("");
 	const [view, setView] = useState<"combined" | "deposits" | "purchases">(
 		"combined",
 	);
 	const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
-	const [isRoleModalOpen, setIsRoleModalOpen] = useState(false);
 	const [isPasswordVisible, setIsPasswordVisible] = useState(false);
 	const [isConfirmPasswordVisible, setIsConfirmPasswordVisible] =
 		useState(false);
-	const [isRoleConfirmOpen, setIsRoleConfirmOpen] = useState(false);
-
-	useEffect(() => {
-		const loggedInAsElement = document.querySelector(
-			"p.text-xs.text-stone-600",
-		);
-		if (loggedInAsElement) {
-			const usernameMatch =
-				loggedInAsElement.textContent?.match(/Logged in as\s+(.+)/);
-			const username = usernameMatch ? usernameMatch[1].trim() : null;
-			console.log("Detected username from UI:", username);
-			setCurrentUsername(username);
-		} else {
-			console.log(
-				"No 'Logged in as' element found, using fallback: admin_user",
-			);
-			setCurrentUsername("admin_user");
-		}
-	}, []);
-
-	const isCurrentUser = currentUsername === user.username;
-	console.log("isCurrentUser:", isCurrentUser, {
-		currentUsername,
-		userUsername: user.username,
-	});
 
 	const transactions = useMemo(() => {
 		if (view === "combined") {
@@ -86,6 +48,18 @@ export const UserView = ({
 		}
 		return view === "deposits" ? depositHistory : purchaseHistory;
 	}, [depositHistory, purchaseHistory, view]);
+
+	const isDeposit = (
+		transaction: Partial<Deposit> | Partial<Purchase>,
+	): transaction is Deposit => {
+		return "amount" in transaction;
+	};
+
+	const isPurchase = (
+		transaction: Partial<Deposit> | Partial<Purchase>,
+	): transaction is Purchase => {
+		return "price" in transaction;
+	};
 
 	const handlePasswordChange = async () => {
 		if (password !== confirmPassword) {
@@ -97,7 +71,7 @@ export const UserView = ({
 			return;
 		}
 		try {
-			await changePassword(user.userId, password);
+			await changePasswordForUser(user.userId, password);
 			toast({ title: "User's password changed successfully", duration: 2000 });
 			setPassword("");
 			setConfirmPassword("");
@@ -108,61 +82,22 @@ export const UserView = ({
 		}
 	};
 
-	const handleRoleChange = () => {
-		if (!newRole || newRole === role) {
-			setIsRoleModalOpen(false);
-			return;
-		}
-		console.log("handleRoleChange called", { newRole, role, isCurrentUser });
-		if (isCurrentUser) {
-			setIsRoleConfirmOpen(true);
-		} else {
-			performRoleChange();
-		}
-	};
-
-	const performRoleChange = async () => {
-		console.log("performRoleChange called", {
-			userId: user.userId,
-			newRole,
-			isCurrentUser,
-		});
-		try {
-			await changeUserRole(user.userId, newRole as UserRole);
-			setRole(newRole as UserRole);
-			toast({ title: "User role updated successfully", duration: 2000 });
-
-			if (isCurrentUser) {
-				console.log("Current user changed their own role, logging out...");
-				await signOut({ redirectTo: "/" });
-			} else {
-				setIsRoleModalOpen(false);
-				setIsRoleConfirmOpen(false);
-				router.refresh();
-			}
-		} catch (error) {
-			console.error("Error changing user role:", error);
-			toast({ title: "Failed to update user role", duration: 2000 });
-			setIsRoleConfirmOpen(false);
-		}
-	};
-
-	const handleCancel = (type: "password" | "role") => {
+	const handleCancel = (type: "password") => {
 		if (type === "password") {
 			setPassword("");
 			setConfirmPassword("");
 			setIsPasswordModalOpen(false);
-		} else {
-			setNewRole("");
-			setIsRoleModalOpen(false);
-			setIsRoleConfirmOpen(false);
 		}
 	};
 
-	const openRoleModal = () => {
-		setNewRole("");
-		setIsRoleModalOpen(true);
-	};
+	useEffect(() => {
+		const usernameElement = document.getElementById("current-username");
+		if (usernameElement) {
+			setCurrentUsername(usernameElement.innerText);
+		} else {
+			setCurrentUsername("admin_user");
+		}
+	}, []);
 
 	return (
 		<div className="flex h-full w-full flex-col gap-y-4">
@@ -193,18 +128,10 @@ export const UserView = ({
 						</div>
 					</div>
 					<div className="flex flex-col">
-						<div className="flex justify-between items-center">
-							<label htmlFor="role" className="text-sm text-stone-700">
-								Role
-							</label>
-							<span
-								onClick={openRoleModal}
-								className="text-xs text-gray-400 cursor-pointer hover:text-black hover:underline"
-							>
-								Change role
-							</span>
-						</div>
-						<p id="role">{role}</p>
+						<label htmlFor="role" className="text-sm text-stone-700">
+							Role
+						</label>
+						<p id="role">{user.role}</p>
 					</div>
 					<div className="flex flex-col">
 						<label htmlFor="balance" className="text-sm text-stone-700">
@@ -240,7 +167,6 @@ export const UserView = ({
 						</button>
 					</div>
 				</div>
-
 				<div className="flex h-full w-full flex-col overflow-clip px-4 space-y-2">
 					<div className="mb-2 flex gap-4 text-xl font-semibold">
 						<h2
@@ -282,52 +208,51 @@ export const UserView = ({
 								: "grid-cols-[max-content_max-content_auto_max-content_max-content]",
 						)}
 					>
-						{transactions.map((transaction) => (
-							<>
-								<p className="text-right">
-									{formatDateTime(new Date(transaction.time))}
-								</p>
-								{isPurchase(transaction) && transaction.price > 0 && (
-									<>
-										<p>Purchase</p>
-										<Link
-											href={`/admin/products/${transaction.product.barcode}`}
-										>
-											{transaction.product.name}
-										</Link>
-										<p className="font-mono text-red-600">-</p>
-										<p className="text-right font-mono text-red-600">
-											{currencyFormatter.format(transaction.price / 100)}
-										</p>
-									</>
-								)}
-								{isPurchase(transaction) && transaction.price <= 0 && (
-									<>
-										<p>Returned</p>
-										<Link
-											href={`/admin/products/${transaction.product.barcode}`}
-										>
-											{transaction.product.name}
-										</Link>
-										<p className="font-mono text-green-700">+</p>
-										<p className="text-right font-mono text-green-700">
-											{currencyFormatter.format(
-												Math.abs(transaction.price) / 100,
-											)}
-										</p>
-									</>
-								)}
-								{isDeposit(transaction) && (
-									<>
-										<p>Deposit</p>
-										<p></p> <p className="font-mono text-green-700">+</p>
-										<p className="text-right font-mono text-green-700">
-											{currencyFormatter.format(transaction.amount / 100)}
-										</p>
-									</>
-								)}
-							</>
-						))}
+						{transactions.length === 0 ? (
+							<p className="col-span-5 text-center text-stone-500 py-4">
+								No transactions yet
+							</p>
+						) : (
+							transactions.map((transaction, index) => (
+								<div key={index} className="contents">
+									<p className="text-right">
+										{formatDateTime(new Date(transaction.time))}
+									</p>
+									{isPurchase(transaction) && transaction.price > 0 && (
+										<>
+											<p>Purchase</p>
+											<p>{transaction.product?.name ?? "Unknown Product"}</p>
+											<p className="font-mono text-red-600">-</p>
+											<p className="text-right font-mono text-red-600">
+												{currencyFormatter.format(transaction.price / 100)}
+											</p>
+										</>
+									)}
+									{isPurchase(transaction) && transaction.price <= 0 && (
+										<>
+											<p>Returned</p>
+											<p>{transaction.product?.name ?? "Unknown Product"}</p>
+											<p className="font-mono text-green-700">+</p>
+											<p className="text-right font-mono text-green-700">
+												{currencyFormatter.format(
+													Math.abs(transaction.price) / 100,
+												)}
+											</p>
+										</>
+									)}
+									{isDeposit(transaction) && (
+										<>
+											<p>Deposit</p>
+											<p></p>
+											<p className="font-mono text-green-700">+</p>
+											<p className="text-right font-mono text-green-700">
+												{currencyFormatter.format(transaction.amount / 100)}
+											</p>
+										</>
+									)}
+								</div>
+							))
+						)}
 					</div>
 				</div>
 			</div>
@@ -411,80 +336,6 @@ export const UserView = ({
 					</div>
 				</div>
 			)}
-
-			{isRoleModalOpen && (
-				<div className="fixed inset-0 flex items-center justify-center bg-gray-500 bg-opacity-50">
-					<div className="bg-white p-6 rounded-lg shadow-lg w-96 relative">
-						<h2 className="text-xl font-semibold mb-4">Change role</h2>
-						<div className="flex flex-col gap-2">
-							<label htmlFor="role" className="text-xs text-stone-700"></label>
-							<select
-								id="role"
-								value={newRole}
-								onChange={(e) => {
-									const selectedRole = e.target.value as UserRole;
-									setNewRole(selectedRole);
-								}}
-								className="px-2 py-1 border rounded text-sm w-full"
-							>
-								<option value="" disabled>
-									Select a role
-								</option>
-								{role !== UserRole.ADMIN && (
-									<option value={UserRole.ADMIN}>ADMIN</option>
-								)}
-								{role !== UserRole.USER1 && (
-									<option value={UserRole.USER1}>USER1</option>
-								)}
-								{role !== UserRole.USER2 && (
-									<option value={UserRole.USER2}>USER2</option>
-								)}
-								{role !== UserRole.INACTIVE && (
-									<option value={UserRole.INACTIVE}>INACTIVE</option>
-								)}
-							</select>
-						</div>
-						<div className="flex gap-2 justify-center mt-4">
-							<button
-								onClick={handleRoleChange}
-								className="px-3 py-1.5 bg-white text-black border border-black rounded hover:bg-black hover:text-white transition-colors duration-200 text-sm"
-							>
-								Update
-							</button>
-							<button
-								onClick={() => handleCancel("role")}
-								className="px-3 py-1.5 bg-white text-black border border-black rounded hover:bg-black hover:text-white transition-colors duration-200 text-sm"
-							>
-								Cancel
-							</button>
-						</div>
-					</div>
-				</div>
-			)}
-
-			<AlertDialog open={isRoleConfirmOpen} onOpenChange={setIsRoleConfirmOpen}>
-				<AlertDialogContent>
-					<AlertDialogHeader>
-						<AlertDialogTitle>Confirm Role Change</AlertDialogTitle>
-						<AlertDialogDescription>
-							Are you sure you want to change your role to{" "}
-							<strong>{newRole}</strong>? This will log you out as the site
-							requires ADMIN role for access.
-						</AlertDialogDescription>
-					</AlertDialogHeader>
-					<AlertDialogFooter>
-						<AlertDialogCancel onClick={() => setIsRoleConfirmOpen(false)}>
-							Cancel
-						</AlertDialogCancel>
-						<AlertDialogAction
-							onClick={performRoleChange}
-							className="bg-blue-600 text-white hover:bg-blue-700"
-						>
-							Confirm
-						</AlertDialogAction>
-					</AlertDialogFooter>
-				</AlertDialogContent>
-			</AlertDialog>
 		</div>
 	);
 };
