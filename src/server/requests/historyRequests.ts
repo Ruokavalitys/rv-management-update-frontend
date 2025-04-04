@@ -3,7 +3,7 @@
 
 import { User } from "@/server/requests/userRequests";
 import { authenticated } from "@/server/wrappers";
-import { AdminProduct } from "./productRequests";
+import { Product } from "./productRequests";
 import { QueryKeys } from "./queryKeys";
 
 const adminDepositsUrl = "api/v1/admin/depositHistory";
@@ -57,7 +57,7 @@ export type Purchase = {
   price: number;
   balanceAfter: number;
   stockAfter: number;
-  product: AdminProduct;
+  product: Product;
   user: User;
   returned: boolean;
   returnedTime: string;
