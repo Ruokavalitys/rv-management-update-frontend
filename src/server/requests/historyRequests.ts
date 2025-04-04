@@ -52,14 +52,17 @@ export async function getCurrentUserDeposits() {
 }
 
 export type Purchase = {
-	purchaseId: number;
-	time: string;
-	price: number;
-	balanceAfter: number;
-	stockAfter: number;
-	product: Product;
-	user: User;
-	returned: boolean;
+  purchaseId: number;
+  time: string;
+  price: number;
+  balanceAfter: number;
+  stockAfter: number;
+  product: Product;
+  user: User;
+  returned: boolean;
+  returnedTime: string;
+  returnedBalanceAfter: number;
+  isReturnAction: boolean;
 };
 export type getAllPurchasesResponse = {
 	purchases: Purchase[];
