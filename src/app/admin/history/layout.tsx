@@ -1,16 +1,10 @@
 import { HeaderTabs } from "@/components/ui/header-tab";
 
 export const historyTabs: HeaderTabs = {
-<<<<<<< HEAD
   Overview: { href: "/admin/history" },
   Deposits: { href: "/admin/history/deposits" },
   Purchases: { href: "/admin/history/purchases" },
   Returns: { href: "/admin/history/returns" },
-=======
-	Overview: { href: "/admin/history" },
-	Deposits: { href: "/admin/history/deposits" },
-	Purchases: { href: "/admin/history/purchases" },
->>>>>>> 7fdd56538c42bbaa59d9bb992b4e4808e385f19b
 };
 
 async function HistoryLayout({ children }: { children: React.ReactNode }) {
