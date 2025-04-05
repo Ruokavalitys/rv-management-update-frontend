@@ -27,7 +27,7 @@ export const DepositRow = ({ deposit }: { deposit: Deposit }) => {
 			</div>
 
 			<div className="place-self-center self-center">
-				<p className="text-green-700">Deposit</p>
+				<p className="text-green-700">{depositTypeMapping[deposit.type]}</p>
 			</div>
 
 			<div className="place-self-center self-center">
