@@ -1,0 +1,22 @@
+import { TableAndFilter } from "@/components/HistoryTable/TableAndFilter";
+import { HeaderTab } from "@/components/ui/header-tab";
+import { getAllPurchases } from "@/server/requests/historyRequests";
+import { historyTabs } from "../layout";
+
+export async function getAllReturns() {
+const purchases = await getAllPurchases();
+return purchases.filter(purchase => purchase.returned);
+}
+
+export default async function ReturnsPage() {
+const returns = await getAllReturns();
+
+return (
+  <>
+    <HeaderTab tabs={historyTabs} selectedTab="Returns" />
+    <div className="flex h-full min-h-0 w-full flex-row justify-between gap-x-8">
+      <TableAndFilter initialData={returns} />
+    </div>
+  </>
+);
+}
