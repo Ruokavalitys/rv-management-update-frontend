@@ -44,7 +44,9 @@ export const PurchaseRow = ({ purchase }: { purchase: Purchase }) => {
 						{((purchase.balanceAfter + purchase.price) / 100).toFixed(2)} €
 					</span>{" "}
 					<span className="text-lg font-semibold text-red-600">
-						- {(purchase.price / 100).toFixed(2)} €
+						{purchase.balanceAfter + purchase.price > purchase.balanceAfter
+							? `- ${(Math.abs(purchase.price) / 100).toFixed(2)} €`
+							: `+ ${(Math.abs(purchase.price) / 100).toFixed(2)} €`}
 					</span>{" "}
 					={" "}
 					<span
