@@ -47,10 +47,9 @@ export default function Reports() {
 				<div>
 					<div className="flex items-center justify-start border-b border-gray-400 bg-gray-100 p-4 font-bold">
 						<div className="w-32 pl-6">Month</div>
-						<div className="w-32 pl-6">Bottle Returns (€)</div>
 						<div className="w-32 pl-6">Purchases (€)</div>
 						<div className="w-32 pl-6">Product Returns (€)</div>
-						<div className="w-32 pl-6">Bottle Return Refunds (€)</div>
+						<div className="w-32 pl-6">Bottle/Can Returns (€)</div>
 						<div className="w-32 pl-6">Bank Deposits (€)</div>
 						<div className="w-32 pl-6">Cash Deposits (€)</div>
 						<div className="w-32 pl-6 font-bold">Total User Balance (€)</div>

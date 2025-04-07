@@ -15,7 +15,6 @@ export function ReportRow({ report, isTotal }: { report: Report; isTotal?: boole
 			className={`flex items-center justify-start border-b border-gray-300 p-4 ${isTotal ? "font-bold bg-gray-200 border-t border-gray-500" : ""}`}
 		>
 			<div className="w-32 pl-6">{report.month}</div>
-			<div className="w-32 pl-6">{report.bottleReturns} €</div>
 			<div className="w-32 pl-6">{report.purchases} €</div>
 			<div className="w-32 pl-6">{report.productReturns} €</div>
 			<div className="w-32 pl-6">{report.bottleReturnRefunds} €</div>

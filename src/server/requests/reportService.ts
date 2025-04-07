@@ -32,27 +32,43 @@ export async function getFinancialReports(startDate: string, endDate: string) {
 	// Järjestetään ostot kuukausittain
 	const monthlyReports = {};
 
-	filteredPurchases.forEach((p) => {
-		const month = p.time.substring(0, 7); // YYYY-MM
-		if (!monthlyReports[month]) {
-			monthlyReports[month] = {
-				month,
-				bottleReturns: 0,
-				purchases: 0,
-				productReturns: 0,
-				bottleReturnRefunds: 0,
-				bankDeposits: 0,
-				cashDeposits: 0,
-				totalUserBalance: 0,
-			};
-		}
+  console.log("🔥 Kaikki ostot yhteensä:", purchases.length);
+purchases.forEach((p) => {
+	if (p.itemid === 56 || p.itemid === 58) {
+		console.log("🧾 Löytyi pullon/tölkin palautus:", p);
+	}
+});
 
-		if (p.returned) {
-			monthlyReports[month].productReturns += p.price;
-		} else {
-			monthlyReports[month].purchases += p.price;
-		}
-	});
+	filteredPurchases.forEach((p) => {
+    const month = p.time.substring(0, 7); // YYYY-MM
+    if (!monthlyReports[month]) {
+      monthlyReports[month] = {
+        month,
+        bottleReturns: 0,
+        purchases: 0,
+        productReturns: 0,
+        bottleReturnRefunds: 0,
+        bankDeposits: 0,
+        cashDeposits: 0,
+        totalUserBalance: 0,
+      };
+    }
+  
+    // Pullon tai tölkin palautus
+    if (p.itemid === 56 || p.itemid === 58) {
+      monthlyReports[month].bottleReturns += p.price;
+      console.log(
+        `🔄 Bottle/Can return: itemid=${p.itemid}, price=${p.price}, month=${month}`
+      );
+    } else if (p.returned) {
+      monthlyReports[month].productReturns += p.price;
+      console.log(
+        `↩️ Product return: itemid=${p.itemid}, price=${p.price}, month=${month}`
+      );
+    } else {
+      monthlyReports[month].purchases += p.price;
+    }
+  });
 
 	// Järjestetään talletukset kuukausittain
 	filteredDeposits.forEach((d) => {
@@ -71,14 +87,12 @@ export async function getFinancialReports(startDate: string, endDate: string) {
         };
     }
 
-    console.log(`Deposit: ${JSON.stringify(d, null, 2)}`);
-
-    if (d.type === 26) {
+    if (d.type === 17) {
         monthlyReports[month].bankDeposits += d.amount;
-        console.log(`✅ Bank deposit: ${d.amount} € added to month ${month}`);
-    } else if (d.type === 17) {
+        //console.log(`✅ Bank deposit: ${d.amount} € added to month ${month}`);
+    } else if (d.type === 26) {
         monthlyReports[month].cashDeposits += d.amount;
-        console.log(`💵 Cash deposit: ${d.amount} € added to month ${month}`);
+        //console.log(`💵 Cash deposit: ${d.amount} € added to month ${month}`);
     } else {
         console.warn(`⚠️ Unknown deposit type: ${d.type}`);
     }
