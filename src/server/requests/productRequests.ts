@@ -16,6 +16,7 @@ export type AdminProduct = {
 	sellPrice: number;
 	stock: number;
 	buyPrice: number;
+	attachedBoxes?: { boxBarcode: string; itemsPerBox: number }[];
 };
 
 export type UserProduct = {

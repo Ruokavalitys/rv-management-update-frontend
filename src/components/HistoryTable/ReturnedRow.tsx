@@ -2,11 +2,11 @@ import { formatDateTime } from "@/lib/dateUtils";
 import { Purchase } from "@/server/requests/historyRequests";
 import Link from "next/link";
 
-export const PurchaseRow = ({ purchase }: { purchase: Purchase }) => {
+export const ReturnedRow = ({ purchase }: { purchase: Purchase }) => {
 	return (
 		<div
-			key={`purchase-${purchase.purchaseId}`}
-			className="inline-grid w-full cursor-pointer grid-cols-5 px-4 py-4 transition-all hover:bg-red-50"
+      key={`return-${purchase.purchaseId}`}
+			className="inline-grid w-full cursor-pointer grid-cols-5 px-4 py-4 transition-all hover:bg-blue-50"
 		>
 			<div className="whitespace-nowrap">
 				<h3 className="text-lg font-semibold text-black">
@@ -18,11 +18,11 @@ export const PurchaseRow = ({ purchase }: { purchase: Purchase }) => {
 			</div>
 
 			<div className="place-self-center self-center">
-				<p>{formatDateTime(new Date(Date.parse(purchase.time)))}</p>
+				<p>{formatDateTime(new Date(Date.parse(purchase.returnedTime)))}</p>
 			</div>
 
 			<div className="place-self-center self-center">
-				{purchase.returned ? <p className="text-red-600">Returned purchase</p> : <p className="text-red-600">Purchased</p>}
+				<p className="text-blue-600">Returned</p>
 			</div>
 
 			<div className="place-self-center self-center">
@@ -38,23 +38,23 @@ export const PurchaseRow = ({ purchase }: { purchase: Purchase }) => {
 				<p className="text-sm text-stone-300">
 					<span
 						className={`font-semibold ${
-							purchase.balanceAfter + purchase.price < 0 ? "text-red-500" : ""
-						}`}
+              				purchase.returnedBalanceAfter - purchase.price < 0 ? "text-red-500" : ""
+            			}`}
 					>
-						{((purchase.balanceAfter + purchase.price) / 100).toFixed(2)} €
+						{((purchase.returnedBalanceAfter - purchase.price) / 100).toFixed(2)} €
 					</span>{" "}
-					<span className="text-lg font-semibold text-red-600">
-						{purchase.balanceAfter + purchase.price > purchase.balanceAfter
-							? `- ${(Math.abs(purchase.price) / 100).toFixed(2)} €`
-							: `+ ${(Math.abs(purchase.price) / 100).toFixed(2)} €`}
+					<span className="text-lg font-semibold text-blue-600">
+						{purchase.returnedBalanceAfter - purchase.price < purchase.returnedBalanceAfter
+							? `+ ${(Math.abs(purchase.price) / 100).toFixed(2)} €`
+							: `- ${(Math.abs(purchase.price) / 100).toFixed(2)} €`}
 					</span>{" "}
 					={" "}
 					<span
 						className={`font-semibold ${
-							purchase.balanceAfter < 0 ? "text-red-500" : ""
-						}`}
+              				purchase.returnedBalanceAfter < 0 ? "text-red-500" : ""
+            			}`}
 					>
-						{(purchase.balanceAfter / 100).toFixed(2)}
+						{(purchase.returnedBalanceAfter / 100).toFixed(2)}
 					</span>{" "}
 					€
 				</p>

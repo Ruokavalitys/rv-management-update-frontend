@@ -27,11 +27,11 @@ export const DepositRow = ({ deposit }: { deposit: Deposit }) => {
 			</div>
 
 			<div className="place-self-center self-center">
-				<p className="text-green-700">Deposit</p>
+				<p className="text-green-700">{depositTypeMapping[deposit.type]}</p>
 			</div>
 
 			<div className="place-self-center self-center">
-				<p>{depositTypeMapping[deposit.type]}</p>
+				<p></p>
 			</div>
 
 			<div className="flex flex-col items-end">
@@ -58,7 +58,7 @@ export const DepositRow = ({ deposit }: { deposit: Deposit }) => {
 				</p>
 				<p className="text-sm text-stone-500 text-black">
 					{deposit.user.email}
-				</p>{" "}
+				</p>
 			</div>
 		</div>
 	);
