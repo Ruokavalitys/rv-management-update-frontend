@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { useToast } from "@/components/ui/use-toast";
+import { calculateMargin, calculateSellPrice } from "@/lib/marginUtils";
 import { nextFieldOnEnter } from "@/lib/utils";
 import { editProductAction } from "@/server/actions/products";
 import { Category } from "@/server/requests/categoryRequests";
@@ -36,10 +37,9 @@ export const ProductEditForm = ({
   defaultMargin,
   categories,
 }: ProductEditFormProps) => {
-  const [state, updateProduct] = useFormState<
-    { success: boolean; error?: unknown },
-    FormData
-  >(editProductAction, { success: false });
+  const [state, updateProduct] = useFormState(editProductAction, {
+    success: false,
+  });
 
   const [name, setName, resetName] = useResettableState(product.name);
   const [category, setCategory, resetCategory] = useResettableState(
@@ -54,23 +54,56 @@ export const ProductEditForm = ({
   const [sellPrice, setSellPrice, resetSellPrice] = useResettableState(
     toDecimalPlaces(product.sellPrice).toString(),
   );
-  const [customMargin, setCustomMargin] = useState(() => {
-    const calculatedMargin =
-      (parseFloat(sellPrice) / parseFloat(buyPrice)) * 100;
-    return calculatedMargin.toFixed(0) !== (defaultMargin * 100).toFixed(0);
-  });
+  const [activeMargin, setActiveMargin] = useState(
+    calculateMargin(
+      toDecimalPlaces(product.buyPrice),
+      toDecimalPlaces(product.sellPrice),
+      defaultMargin
+    ),
+  );
 
   const router = useRouter();
   const { toast } = useToast();
 
   useEffect(() => {
     if (state.success) {
-      toast({ title: "Product updated", duration: 5_000 });
+      toast({ title: "Product updated", duration: 5000 });
       router.push(`/admin/products/${product.barcode}`);
     } else if (state.error) {
-      toast({ title: "Error updating product", duration: 5_000 });
+      toast({ title: "Error updating product", duration: 5000 });
     }
   }, [state]);
+
+  const handleBuyPriceChange = (value: string) => {
+    setBuyPrice(value);
+    if (value === "") {
+      setSellPrice("");
+      setActiveMargin(defaultMargin);
+    } else {
+      const newSellPrice = calculateSellPrice(value, defaultMargin);
+      setSellPrice(newSellPrice);
+      setActiveMargin(calculateMargin(value, newSellPrice, defaultMargin));
+    }
+  };
+
+  const handleSellPriceChange = (value: string) => {
+    setSellPrice(value);
+    setActiveMargin(calculateMargin(buyPrice, value, defaultMargin));
+  };
+
+  const handleResetPrices = () => {
+    resetBuyPrice();
+    resetSellPrice();
+    setActiveMargin(
+      calculateMargin(
+        toDecimalPlaces(product.buyPrice),
+        toDecimalPlaces(product.sellPrice),
+        defaultMargin
+      )
+    );
+  };
+
+  const isDefaultMargin = Math.abs(activeMargin - defaultMargin) < 0.001;
 
   return (
     <form
@@ -134,81 +167,64 @@ export const ProductEditForm = ({
             </div>
           </div>
 
-          <div className="grid grid-cols-[max-content_max-content_max-content] grid-rows-[max-content_max-content] gap-x-2 gap-y-2">
-            <div className="flex flex-col gap-y-2">
-              <label htmlFor="buyPrice" className="text-sm text-stone-500">
-                Buy Price (€)
-              </label>
-              <Input
-                id="buyPrice"
-                name="buyPrice"
-                type="number"
-                placeholder="Buy Price"
-                data-next="sellPrice"
-                step={0.01}
-                containerClassName="w-[10ch]"
-                className="[appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
-                value={buyPrice}
-                onChange={({ target }) => {
-                  setBuyPrice(target.value);
-                  if (sellPrice === "") {
-                    setCustomMargin(false);
-                  }
-                  if (!customMargin) {
-                    setSellPrice(
-                      (Number(target.value) * (1 + defaultMargin)).toFixed(2),
-                    );
-                  }
-                }}
-              />
-            </div>
+          <div className="flex flex-col gap-y-2">
+            <div className="flex gap-x-4">
+              <div className="flex flex-col gap-y-2">
+                <label htmlFor="buyPrice" className="text-sm text-stone-500">
+                  Buy Price (€)
+                </label>
+                <Input
+                  id="buyPrice"
+                  name="buyPrice"
+                  type="number"
+                  placeholder=""
+                  data-next="sellPrice"
+                  step={0.01}
+                  containerClassName="w-[10ch]"
+                  className="[appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                  value={buyPrice}
+                  onChange={({ target }) => handleBuyPriceChange(target.value)}
+                />
+              </div>
 
-            <div className="flex flex-col gap-y-2">
-              <label htmlFor="sellPrice" className="text-sm text-stone-500">
-                Sell Price (€)
-              </label>
-              <Input
-                id="sellPrice"
-                name="sellPrice"
-                type="number"
-                placeholder="Sell Price"
-                data-next="buyInSubmit"
-                step={0.01}
-                value={sellPrice}
-                onChange={({ target }) => {
-                  setCustomMargin(true);
-                  setSellPrice(target.value);
-                }}
-                containerClassName="w-[10ch]"
-                className="[appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
-              />
-            </div>
+              <div className="flex flex-col gap-y-2">
+                <label htmlFor="sellPrice" className="text-sm text-stone-500">
+                  Sell Price (€)
+                </label>
+                <Input
+                  id="sellPrice"
+                  name="sellPrice"
+                  type="number"
+                  placeholder=""
+                  data-next="buyInSubmit"
+                  step={0.01}
+                  value={sellPrice}
+                  onChange={({ target }) => handleSellPriceChange(target.value)}
+                  containerClassName="w-[10ch]"
+                  className="[appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                />
+              </div>
 
-            <div className="flex flex-col gap-y-2">
-              <label htmlFor="resetPrices" className="text-sm text-stone-500">
-                Reset prices
-              </label>
-              <div
-                className="flex h-fit cursor-pointer items-center justify-center rounded-md border p-3 hover:bg-stone-100"
-                onClick={() => {
-                  resetBuyPrice();
-                  resetSellPrice();
-                }}
-              >
-                <RotateCcw className="h-4 w-4" />
+              <div className="flex flex-col gap-y-2">
+                <label htmlFor="resetPrices" className="text-sm text-stone-500">
+                  Reset prices
+                </label>
+                <div
+                  className="flex h-fit cursor-pointer items-center justify-center rounded-md border p-3 hover:bg-stone-100"
+                  onClick={handleResetPrices}
+                >
+                  <RotateCcw className="h-4 w-4" />
+                </div>
               </div>
             </div>
 
-            <span className="col-span-2 justify-self-center text-sm text-stone-500">
-              {customMargin
-                ? "(Custom Margin: " +
-                  (
-                    (parseFloat(sellPrice) / parseFloat(buyPrice)) * 100 -
-                    100
-                  ).toFixed(0) +
-                  "%)"
-                : "(Default Margin: " + (defaultMargin * 100).toFixed(0) + "%)"}
-            </span>
+            <div className="text-center text-sm text-stone-500">
+              {isDefaultMargin
+                ? `Default margin applied: ${(activeMargin * 100).toFixed(0)}%`
+                : `Current margin: ${(activeMargin * 100).toFixed(
+                    0
+                  )}% (Default margin: ${(defaultMargin * 100).toFixed(0)}%)`}
+            </div>
           </div>
         </div>
 
