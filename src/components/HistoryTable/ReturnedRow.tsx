@@ -9,12 +9,14 @@ export const ReturnedRow = ({ purchase }: { purchase: Purchase }) => {
 			className="inline-grid w-full cursor-pointer grid-cols-5 px-4 py-4 transition-all hover:bg-blue-50"
 		>
 			<div className="whitespace-nowrap">
-				<h3 className="text-lg font-semibold text-black">
-					{purchase.user.username}
-				</h3>
-				<p className="text-sm text-stone-500 text-black">
-					{purchase.user.fullName}
-				</p>
+				<Link href={`/admin/users/${purchase.user.userId}`} className="group">
+					<h3 className="text-lg font-semibold text-black group-hover:text-blue-600">
+						{purchase.user.username}
+					</h3>
+					<p className="text-sm text-stone-500 text-black group-hover:text-blue-600">
+						{purchase.user.fullName}
+					</p>
+				</Link>
 			</div>
 
 			<div className="place-self-center self-center">
@@ -28,7 +30,7 @@ export const ReturnedRow = ({ purchase }: { purchase: Purchase }) => {
 			<div className="place-self-center self-center">
 				<Link
 					href={`/admin/products/${purchase.product.barcode}`}
-					className="block text-center"
+					className="block text-center hover:text-blue-600"
 				>
 					{purchase.product.name}
 				</Link>
@@ -44,7 +46,9 @@ export const ReturnedRow = ({ purchase }: { purchase: Purchase }) => {
 						{((purchase.returnedBalanceAfter - purchase.price) / 100).toFixed(2)} €
 					</span>{" "}
 					<span className="text-lg font-semibold text-blue-600">
-            			+ {(purchase.price / 100).toFixed(2)} €
+						{purchase.returnedBalanceAfter - purchase.price < purchase.returnedBalanceAfter
+							? `+ ${(Math.abs(purchase.price) / 100).toFixed(2)} €`
+							: `- ${(Math.abs(purchase.price) / 100).toFixed(2)} €`}
 					</span>{" "}
 					={" "}
 					<span
