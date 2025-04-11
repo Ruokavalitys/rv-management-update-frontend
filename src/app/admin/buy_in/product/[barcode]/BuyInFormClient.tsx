@@ -40,6 +40,7 @@ export default function BuyInFormClient({
 }) {
 	const [boxCount, setBoxCount] = useState<string>("1");
 	const [productQuantity, setProductQuantity] = useState<string>("1");
+	const [boxBuyPrice, setBoxBuyPrice] = useState<string>("");
 	const [buyPrice, setBuyPrice] = useState<string>("");
 	const [sellPrice, setSellPrice] = useState<string>("");
 	const [isCustomMargin, setIsCustomMargin] = useState(false);
@@ -92,8 +93,35 @@ export default function BuyInFormClient({
 		}
 	}, [buyPrice, sellPrice, box, product, defaultMargin]);
 
+	const handleBoxBuyPriceChange = (value: string) => {
+		setBoxBuyPrice(value);
+		if (value === "" || !box) {
+			setBuyPrice("");
+			setSellPrice("");
+			setIsCustomMargin(false);
+		} else {
+			const boxPriceNum = parseFloat(value);
+			if (!isNaN(boxPriceNum) && boxPriceNum >= 0 && box.itemsPerBox > 0) {
+				const individualBuyPrice = (boxPriceNum / box.itemsPerBox).toFixed(2);
+				setBuyPrice(individualBuyPrice);
+				if (!isCustomMargin) {
+					const newSellPrice = calculateSellPrice(
+						individualBuyPrice,
+						defaultMargin,
+					);
+					setSellPrice(newSellPrice);
+				}
+			} else {
+				setBuyPrice("");
+				setSellPrice("");
+				setIsCustomMargin(false);
+			}
+		}
+	};
+
 	const handleBuyPriceChange = (value: string) => {
 		setBuyPrice(value);
+		setBoxBuyPrice("");
 		if (value === "") {
 			setSellPrice("");
 			setIsCustomMargin(false);
@@ -115,6 +143,7 @@ export default function BuyInFormClient({
 	const handleClear = () => {
 		setBoxCount("1");
 		setProductQuantity("1");
+		setBoxBuyPrice("");
 		setBuyPrice("");
 		setSellPrice("");
 		setIsCustomMargin(false);
@@ -295,6 +324,25 @@ export default function BuyInFormClient({
 									/>
 								</div>
 								<div>
+									<label
+										htmlFor="boxBuyPrice"
+										className="text-sm text-stone-700"
+									>
+										Box Buy Price (optional)
+									</label>
+									<Input
+										id="boxBuyPrice"
+										name="boxBuyPrice"
+										type="number"
+										value={boxBuyPrice}
+										onChange={(e) => handleBoxBuyPriceChange(e.target.value)}
+										min={0}
+										step="0.01"
+										placeholder=""
+										className="w-full appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+									/>
+								</div>
+								<div>
 									<label htmlFor="buyPrice" className="text-sm text-stone-700">
 										Adjust Buy Price (optional)
 									</label>
@@ -435,7 +483,7 @@ export default function BuyInFormClient({
 								<p className="text-sm text-black-500">Loading data...</p>
 							</div>
 						)}
-						{error && <p className="text-sm text-red-500">{error}</p>}
+						{error && <p className="text-sm text-black-500">{error}</p>}
 					</div>
 				</div>
 			</div>
