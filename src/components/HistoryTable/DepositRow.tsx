@@ -1,10 +1,11 @@
 import { formatDateTime } from "@/lib/dateUtils";
 import { Deposit } from "@/server/requests/historyRequests";
+import Link from "next/link";
 
 const depositTypeMapping: { [key: number]: string } = {
 	17: "Deposit",
-	26: "Cash",
-	27: "Bank Transfer",
+	26: "Cash deposit",
+	27: "Bank transfer",
 };
 
 export const DepositRow = ({ deposit }: { deposit: Deposit }) => {
@@ -14,12 +15,14 @@ export const DepositRow = ({ deposit }: { deposit: Deposit }) => {
 			className="inline-grid w-full cursor-pointer grid-cols-5 px-4 py-4 transition-all hover:bg-green-50"
 		>
 			<div className="whitespace-nowrap">
-				<h3 className="text-lg font-semibold text-black">
-					{deposit.user.username}
-				</h3>
-				<p className="text-sm text-stone-500 text-black">
-					{deposit.user.fullName}
-				</p>
+				<Link href={`/admin/users/${deposit.user.userId}`} className="group">
+					<h3 className="text-lg font-semibold text-black group-hover:text-green-700">
+						{deposit.user.username}
+					</h3>
+					<p className="text-sm text-stone-500 text-black group-hover:text-green-700">
+						{deposit.user.fullName}
+					</p>
+				</Link>
 			</div>
 
 			<div className="place-self-center self-center">

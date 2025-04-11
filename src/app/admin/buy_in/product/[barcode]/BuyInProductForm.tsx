@@ -4,10 +4,11 @@ import Barcode from "@/components/Barcode";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
+import { calculateSellPrice } from "@/lib/marginUtils";
 import { nextFieldOnEnter } from "@/lib/utils";
 import { buyInProductAction } from "@/server/actions/products";
 import { Product, addStockResponse } from "@/server/requests/productRequests";
-import { Loader } from "lucide-react";
+import { Loader, X } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -17,13 +18,26 @@ type OwnProps = { product: Product; defaultMargin: number };
 
 export default function BuyInProductForm({ product, defaultMargin }: OwnProps) {
   const [count, setCount] = useState<number | undefined>(undefined);
-  const [customMargin, setCustomMargin] = useState(false);
-  const [buyPrice, setBuyPrice] = useState<string>(
-    (product.buyPrice / 100).toFixed(2),
-  );
-  const [sellPrice, setSellPrice] = useState<string>(
-    (product.sellPrice / 100).toFixed(2),
-  );
+  const [buyPrice, setBuyPrice] = useState<string>((product.buyPrice / 100).toFixed(2));
+  const [sellPrice, setSellPrice] = useState<string>((product.sellPrice / 100).toFixed(2));
+  const [isCustomMargin, setIsCustomMargin] = useState(false);
+
+  const initialMargin = product.buyPrice && product.sellPrice
+    ? ((product.sellPrice / product.buyPrice) * 100 - 100) / 100
+    : defaultMargin;
+
+  const [activeMargin, setActiveMargin] = useState<number>(initialMargin);
+
+  useEffect(() => {
+    const buy = parseFloat(buyPrice || (product.buyPrice / 100).toFixed(2));
+    const sell = parseFloat(sellPrice || (product.sellPrice / 100).toFixed(2));
+    if (buy && sell && buy > 0) {
+      const margin = (sell / buy) * 100 - 100;
+      setActiveMargin(margin / 100);
+    } else {
+      setActiveMargin(defaultMargin);
+    }
+  }, [buyPrice, sellPrice, product, defaultMargin]);
 
   const { barcode } = product;
 
@@ -35,6 +49,7 @@ export default function BuyInProductForm({ product, defaultMargin }: OwnProps) {
 
   const router = useRouter();
   const { toast } = useToast();
+
   useEffect(() => {
     if (state.success && state.newStock) {
       toast({
@@ -48,14 +63,45 @@ export default function BuyInProductForm({ product, defaultMargin }: OwnProps) {
 
   const { pending } = useFormStatus();
 
+  const handleBuyPriceChange = (value: string) => {
+    setBuyPrice(value);
+    if (value === "") {
+      setSellPrice("");
+      setIsCustomMargin(false);
+    } else if (!isCustomMargin) {
+      const newSellPrice = calculateSellPrice(value, defaultMargin);
+      setSellPrice(newSellPrice);
+    }
+  };
+
+  const handleSellPriceChange = (value: string) => {
+    setSellPrice(value);
+    if (value === "") {
+      setIsCustomMargin(false);
+    } else {
+      setIsCustomMargin(true);
+    }
+  };
+
+  const handleClear = () => {
+    setCount(undefined);
+    setBuyPrice((product.buyPrice / 100).toFixed(2));
+    setSellPrice((product.sellPrice / 100).toFixed(2));
+    setIsCustomMargin(false);
+    setActiveMargin(initialMargin);
+    router.push(`/admin/buy_in`);
+  };
+
+  const isDefaultMargin = Math.abs(activeMargin - defaultMargin) < 0.001;
+
   return (
     <>
-      <div
-        className="flex flex-col items-center gap-y-4"
-        onKeyDown={nextFieldOnEnter}
-      >
-        <div>
+      <div className="flex flex-col items-center gap-y-4" onKeyDown={nextFieldOnEnter}>
+        <div className="flex justify-between items-start w-full">
           <p className="text-lg font-semibold">{product.name}</p>
+          <Button variant="outline" className="h-6 w-6 p-1" onClick={handleClear} type="button">
+            <X className="h-4 w-4" />
+          </Button>
         </div>
         <Barcode barcode={barcode} width={3} height={60} />
         <Input
@@ -67,9 +113,7 @@ export default function BuyInProductForm({ product, defaultMargin }: OwnProps) {
           readOnly
         />
         <div>
-          <label htmlFor="count" className="text-sm text-stone-700">
-            Count
-          </label>
+          <label htmlFor="count" className="text-sm text-stone-700">Count</label>
           <Input
             id="count"
             name="count"
@@ -82,9 +126,7 @@ export default function BuyInProductForm({ product, defaultMargin }: OwnProps) {
           />
         </div>
         <div>
-          <label htmlFor="buyPrice" className="text-sm text-stone-500">
-            Buy Price (€)
-          </label>
+          <label htmlFor="buyPrice" className="text-sm text-stone-500">Buy Price (€)</label>
           <Input
             id="buyPrice"
             name="buyPrice"
@@ -94,31 +136,11 @@ export default function BuyInProductForm({ product, defaultMargin }: OwnProps) {
             step={0.01}
             className="[appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
             value={buyPrice}
-            onChange={({ target }) => {
-              setBuyPrice(target.value);
-              if (sellPrice === "") {
-                setCustomMargin(false);
-              }
-              if (!customMargin) {
-                setSellPrice(
-                  (Number(target.value) * (1 + defaultMargin)).toFixed(2),
-                );
-              }
-            }}
+            onChange={({ target }) => handleBuyPriceChange(target.value)}
           />
         </div>
         <div>
-          <label htmlFor="sellPrice" className="text-sm text-stone-500">
-            Sell Price (€){" "}
-            {customMargin
-              ? "(Custom Margin: " +
-                (
-                  (parseFloat(sellPrice) / parseFloat(buyPrice)) * 100 -
-                  100
-                ).toFixed(0) +
-                "%)"
-              : "(Default Margin: " + (defaultMargin * 100).toFixed(0) + "%)"}
-          </label>
+          <label htmlFor="sellPrice" className="text-sm text-stone-500">Sell Price (€)</label>
           <Input
             id="sellPrice"
             name="sellPrice"
@@ -127,12 +149,14 @@ export default function BuyInProductForm({ product, defaultMargin }: OwnProps) {
             data-next="buyInSubmit"
             step={0.01}
             value={sellPrice}
-            onChange={({ target }) => {
-              setCustomMargin(true);
-              setSellPrice(target.value);
-            }}
+            onChange={({ target }) => handleSellPriceChange(target.value)}
             className="[appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
           />
+        </div>
+        <div className="text-sm text-stone-500">
+          {isDefaultMargin
+            ? `Default margin applied: ${(defaultMargin * 100).toFixed(0)}%`
+            : `Current margin: ${(activeMargin * 100).toFixed(0)}% (Default margin: ${(defaultMargin * 100).toFixed(0)}%)`}
         </div>
       </div>
       <div className="mt-3 flex flex-row-reverse justify-between gap-x-4">
