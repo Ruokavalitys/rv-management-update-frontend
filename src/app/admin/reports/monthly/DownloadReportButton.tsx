@@ -16,8 +16,8 @@ import { ComponentProps } from "react";
 
 type Report = {
 	month: string;
-	bottleReturns: number;
 	purchases: number;
+  bottleReturns: number;
 	productReturns: number;
 	bottleReturnRefunds: number;
 	bankDeposits: number;
@@ -37,10 +37,9 @@ const DownloadReportButton = ({
         .map((report) =>
           [
             report.month,
-            report.bottleReturns,
             report.purchases,
+            report.bottleReturns,
             report.productReturns,
-            report.bottleReturnRefunds,
             report.bankDeposits,
             report.cashDeposits,
             report.totalUserBalance,

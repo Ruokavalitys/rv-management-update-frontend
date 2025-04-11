@@ -3,7 +3,6 @@ type Report = {
 	bottleReturns: number;
 	purchases: number;
 	productReturns: number;
-	bottleReturnRefunds: number;
 	bankDeposits: number;
 	cashDeposits: number;
 	totalUserBalance: number;
@@ -17,7 +16,7 @@ export function ReportRow({ report, isTotal }: { report: Report; isTotal?: boole
 			<div className="w-32 pl-6">{report.month}</div>
 			<div className="w-32 pl-6">{report.purchases} €</div>
 			<div className="w-32 pl-6">{report.productReturns} €</div>
-			<div className="w-32 pl-6">{report.bottleReturnRefunds} €</div>
+			<div className="w-32 pl-6">{report.bottleReturns} €</div>
 			<div className="w-32 pl-6">{report.bankDeposits} €</div>
 			<div className="w-32 pl-6">{report.cashDeposits} €</div>
 			<div className="w-32 pl-6 font-bold">{report.totalUserBalance} €</div>
