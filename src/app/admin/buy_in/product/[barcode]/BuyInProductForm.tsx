@@ -110,6 +110,11 @@ export default function BuyInProductForm({ product, defaultMargin }: OwnProps) {
 		};
 	}, [initialMargin, product.buyPrice, product.sellPrice, router]);
 
+	const totalBuyValue =
+		count && buyPrice
+			? (Number(buyPrice) * count).toFixed(2).replace(".", ",")
+			: "0,00";
+
 	const isDefaultMargin = Math.abs(activeMargin - defaultMargin) < 0.001;
 
 	return (
@@ -155,7 +160,7 @@ export default function BuyInProductForm({ product, defaultMargin }: OwnProps) {
 				</div>
 				<div>
 					<label htmlFor="buyPrice" className="text-sm text-stone-500">
-						Buy Price (€)
+						Buy Price
 					</label>
 					<Input
 						id="buyPrice"
@@ -171,7 +176,7 @@ export default function BuyInProductForm({ product, defaultMargin }: OwnProps) {
 				</div>
 				<div>
 					<label htmlFor="sellPrice" className="text-sm text-stone-500">
-						Sell Price (€)
+						Sell Price
 					</label>
 					<Input
 						id="sellPrice"
@@ -189,6 +194,14 @@ export default function BuyInProductForm({ product, defaultMargin }: OwnProps) {
 					{isDefaultMargin
 						? `Default margin applied: ${(defaultMargin * 100).toFixed(0)}%`
 						: `Current margin: ${(activeMargin * 100).toFixed(0)}% (Default margin: ${(defaultMargin * 100).toFixed(0)}%)`}
+				</div>
+				<div className="flex flex-col gap-y-1">
+					<p className="text-sm">
+						<strong>Total items to add:</strong> {count || 0}
+					</p>
+					<p className="text-sm">
+						<strong>Items Total Value:</strong> {totalBuyValue} €
+					</p>
 				</div>
 			</div>
 			<div className="mt-3 flex flex-row-reverse justify-between gap-x-4">
