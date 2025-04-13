@@ -11,7 +11,6 @@ import {
 	AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useToast } from "@/components/ui/use-toast";
-import { formatDateTime } from "@/lib/dateUtils";
 import { currencyFormatter } from "@/lib/moneyFormatter";
 import { isDeposit, isPurchase } from "@/lib/transactions";
 import { merge } from "@/lib/utils";
@@ -24,18 +23,22 @@ import {
 } from "@/server/requests/userRequests";
 import { Copy, Eye, EyeOff, Lock } from "lucide-react";
 import { signOut } from "next-auth/react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
+import { PurchaseRow } from "@/components/UserHistoryTable/UserPurchaseRow";
+import { DepositRow } from "@/components/UserHistoryTable/UserDepositRow";
+import { ReturnedRow } from "@/components/UserHistoryTable/UserReturnedRow";
 
 export const UserView = ({
 	user,
 	depositHistory,
 	purchaseHistory,
+	returnHistory,
 }: {
 	user: UserType;
 	depositHistory: Omit<Deposit, "user">[];
 	purchaseHistory: Omit<Purchase, "user">[];
+	returnHistory: Omit<Purchase, "user">[];
 }) => {
 	const { toast } = useToast();
 	const router = useRouter();
@@ -44,8 +47,8 @@ export const UserView = ({
 	const [confirmPassword, setConfirmPassword] = useState("");
 	const [role, setRole] = useState(user.role);
 	const [newRole, setNewRole] = useState<UserRole | "">("");
-	const [view, setView] = useState<"combined" | "deposits" | "purchases">(
-		"combined",
+	const [view, setView] = useState<"overview" | "deposits" | "purchases" | "returns">(
+		"overview",
 	);
 	const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
 	const [isRoleModalOpen, setIsRoleModalOpen] = useState(false);
@@ -79,13 +82,22 @@ export const UserView = ({
 	});
 
 	const transactions = useMemo(() => {
-		if (view === "combined") {
-			return [...depositHistory, ...purchaseHistory].toSorted(
+		if (view === "overview") {
+			return [...depositHistory, ...purchaseHistory, ...returnHistory].toSorted(
 				(a, b) => new Date(b.time).getTime() - new Date(a.time).getTime(),
 			);
 		}
-		return view === "deposits" ? depositHistory : purchaseHistory;
-	}, [depositHistory, purchaseHistory, view]);
+		if (view === "deposits") {
+			return depositHistory;
+		}
+		if (view === "purchases") {
+			return purchaseHistory;
+		}
+		if (view === "returns") {
+			return returnHistory;
+		}
+		return [];
+	}, [depositHistory, purchaseHistory, returnHistory, view]);
 
 	const handlePasswordChange = async () => {
 		if (password !== confirmPassword) {
@@ -171,9 +183,9 @@ export const UserView = ({
 					<div className="flex gap-4">
 						<div className="flex flex-col">
 							<h1 className="max-w-[15ch] text-2xl font-semibold">
-								{user.fullName}
+								{user.username}
 							</h1>
-							<p className="text-stone-500">{user.username}</p>
+							<p className="text-stone-500">{user.fullName}</p>
 						</div>
 					</div>
 					<div className="flex flex-col">
@@ -224,7 +236,7 @@ export const UserView = ({
 						<p id="total-spent">
 							{currencyFormatter.format(
 								purchaseHistory.reduce((acc, purchase) => {
-									if (purchase.price <= 0) return acc;
+									if (purchase.price <= 0 || purchase.returned) return acc;
 									return acc + purchase.price;
 								}, 0) / 100,
 							)}
@@ -246,12 +258,12 @@ export const UserView = ({
 						<h2
 							className={merge(
 								"select-none",
-								view !== "combined" &&
+								view !== "overview" &&
 									"cursor-pointer text-stone-300 underline-offset-8 transition-all duration-100 hover:underline focus-visible:underline focus-visible:outline-none",
 							)}
-							onClick={() => setView("combined")}
+							onClick={() => setView("overview")}
 						>
-							Combined
+							Overview
 						</h2>
 						<h2
 							className={merge(
@@ -273,64 +285,58 @@ export const UserView = ({
 						>
 							Purchases
 						</h2>
+						<h2
+							className={merge(
+								"select-none",
+								view !== "returns" &&
+									"cursor-pointer text-stone-300 underline-offset-8 transition-all duration-100 hover:underline focus-visible:underline focus-visible:outline-none",
+							)}
+							onClick={() => setView("returns")}
+						>
+							Returns
+						</h2>
 					</div>
 					<div
-						className={merge(
-							"grid h-full auto-rows-max gap-x-4 gap-y-1 overflow-y-scroll pr-4",
-							view === "deposits" || view === "combined"
-								? "grid-cols-[max-content_max-content_auto_max-content_max-content]"
-								: "grid-cols-[max-content_max-content_auto_max-content_max-content]",
-						)}
+						className="hidden h-full w-full overflow-y-auto rounded-lg border shadow-lg xl:flex xl:flex-col"
 					>
-						{transactions.map((transaction) => (
-							<>
-								<p className="text-right">
-									{formatDateTime(new Date(transaction.time))}
-								</p>
-								{isPurchase(transaction) && transaction.price > 0 && (
-									<>
-										<p>Purchase</p>
-										<Link
-											href={`/admin/products/${transaction.product.barcode}`}
-										>
-											{transaction.product.name}
-										</Link>
-										<p className="font-mono text-red-600">-</p>
-										<p className="text-right font-mono text-red-600">
-											{currencyFormatter.format(transaction.price / 100)}
-										</p>
-									</>
+						<div className="w-full">
+							<div className="flex w-full px-4 py-4 border-b border-gray-200 bg-gray-50">
+								<div className="flex-1 flex items-left text-left font-semibold text-gray-600 whitespace-nowrap">
+									Date
+								</div>
+								<div className="flex-1 flex justify-center items-center text-left font-semibold text-gray-600">
+									Transaction
+								</div>
+								<div className="flex-1 flex justify-center items-center text-left font-semibold text-gray-600">
+									Product
+								</div>
+								<div className="flex-1 flex justify-center items-center text-left font-semibold text-gray-600">
+									<span className="ml-auto mr-10 pr-4">Amount</span>
+								</div>
+							</div>
+							{transactions.length === 0 ? (
+							<p className="col-span-4 text-center text-stone-500 py-4">
+								No transactions yet
+							</p>
+							) : (
+							transactions.map((transaction, index) => (
+								<div key={index}>
+								{isPurchase(transaction) && !transaction.isReturnAction && (
+									<PurchaseRow key={`purchase-${transaction.purchaseId}`} purchase={transaction} isAdmin={true}/>
 								)}
-								{isPurchase(transaction) && transaction.price <= 0 && (
-									<>
-										<p>Returned</p>
-										<Link
-											href={`/admin/products/${transaction.product.barcode}`}
-										>
-											{transaction.product.name}
-										</Link>
-										<p className="font-mono text-green-700">+</p>
-										<p className="text-right font-mono text-green-700">
-											{currencyFormatter.format(
-												Math.abs(transaction.price) / 100,
-											)}
-										</p>
-									</>
+								{isPurchase(transaction) && transaction.isReturnAction && (
+									<ReturnedRow key={`return-${transaction.purchaseId}`} purchase={transaction} isAdmin={true} />
 								)}
 								{isDeposit(transaction) && (
-									<>
-										<p>Deposit</p>
-										<p></p> <p className="font-mono text-green-700">+</p>
-										<p className="text-right font-mono text-green-700">
-											{currencyFormatter.format(transaction.amount / 100)}
-										</p>
-									</>
+										<DepositRow key={`deposit-${transaction.depositId}`} deposit={transaction} />
 								)}
-							</>
-						))}
+								</div>
+							))
+						)}
 					</div>
 				</div>
 			</div>
+		</div>
 
 			{isPasswordModalOpen && (
 				<div className="fixed inset-0 flex items-center justify-center bg-gray-500 bg-opacity-50">
