@@ -69,18 +69,17 @@ export async function editProductAction(
 	const { barcode, name, stock, buyPrice, sellPrice, categoryId } =
 		Object.fromEntries(formData.entries());
 
-	const roundedBuyPrice =
-		Math.round(parseFloat(buyPrice as string) * 100) / 100;
-	const roundedSellPrice =
-		Math.round(parseFloat(sellPrice as string) * 100) / 100;
-
 	const rawData = {
 		barcode,
 		name,
 		stock: parseInt(stock as string),
 		categoryId: parseInt(categoryId as string),
-		buyPrice: Math.round(roundedBuyPrice * 100),
-		sellPrice: Math.round(roundedSellPrice * 100),
+		buyPrice: buyPrice
+			? Math.round(parseFloat(buyPrice as string) * 100)
+			: undefined,
+		sellPrice: sellPrice
+			? Math.round(parseFloat(sellPrice as string) * 100)
+			: undefined,
 	};
 
 	const validatedData = z
@@ -123,8 +122,8 @@ export async function buyInProductAction(
 	const rawData = {
 		barcode: barcode,
 		count: parseInt(count as string),
-		buyPrice: Math.round(parseFloat(buyPrice as string) * 100),
-		sellPrice: Math.round(parseFloat(sellPrice as string) * 100),
+		buyPrice: parseInt(buyPrice as string),
+		sellPrice: parseInt(sellPrice as string),
 	};
 
 	const validatedData = z
