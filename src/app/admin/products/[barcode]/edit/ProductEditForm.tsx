@@ -181,6 +181,7 @@ export const ProductEditForm = ({
 									placeholder=""
 									data-next="sellPrice"
 									step={0.01}
+									min={0.01}
 									containerClassName="w-[10ch]"
 									className="[appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
 									value={buyPrice}
@@ -199,6 +200,7 @@ export const ProductEditForm = ({
 									placeholder=""
 									data-next="buyInSubmit"
 									step={0.01}
+									min={0.01}
 									value={sellPrice}
 									onChange={({ target }) => handleSellPriceChange(target.value)}
 									containerClassName="w-[10ch]"
@@ -223,8 +225,8 @@ export const ProductEditForm = ({
 							{isInvalidForMargin
 								? "Enter prices to calculate margin"
 								: isDefaultMargin
-									? `Default margin applied: ${(activeMargin * 100).toFixed(0)}%`
-									: `Current margin: ${(activeMargin * 100).toFixed(0)}% (Default margin: ${(defaultMargin * 100).toFixed(0)}%)`}
+									? `Default margin applied: ${(activeMargin * 100).toFixed(2)}%`
+									: `Current margin: ${(activeMargin * 100).toFixed(2)}% (Default margin: ${(defaultMargin * 100).toFixed(2)}%)`}
 						</div>
 					</div>
 				</div>

@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
-import { calculateSellPrice } from "@/lib/marginUtils";
+import { calculateMargin, calculateSellPrice } from "@/lib/marginUtils";
 import { buyInProductAction } from "@/server/actions/products";
 import { buyInBox } from "@/server/requests/boxRequests";
 import { X } from "lucide-react";
@@ -63,34 +63,32 @@ export default function BuyInFormClient({
 			: 0;
 	const initialMargin =
 		initialBuyPrice && initialSellPrice
-			? ((initialSellPrice / initialBuyPrice) * 100 - 100) / 100
+			? calculateMargin(
+					(initialBuyPrice / 100).toFixed(2),
+					(initialSellPrice / 100).toFixed(2),
+					defaultMargin,
+				)
 			: defaultMargin;
 
 	const [activeMargin, setActiveMargin] = useState<number>(initialMargin);
 
 	useEffect(() => {
-		const buy = parseFloat(
+		const buy =
 			buyPrice ||
-				(box
-					? (box.buyPrice! / 100).toFixed(2)
-					: product
-						? (product.buyPrice! / 100).toFixed(2)
-						: "0"),
-		);
-		const sell = parseFloat(
+			(box
+				? (box.buyPrice! / 100).toFixed(2)
+				: product
+					? (product.buyPrice! / 100).toFixed(2)
+					: "0");
+		const sell =
 			sellPrice ||
-				(box
-					? (box.sellPrice! / 100).toFixed(2)
-					: product
-						? (product.sellPrice! / 100).toFixed(2)
-						: "0"),
-		);
-		if (buy && sell && buy > 0) {
-			const margin = (sell / buy) * 100 - 100;
-			setActiveMargin(margin / 100);
-		} else {
-			setActiveMargin(defaultMargin);
-		}
+			(box
+				? (box.sellPrice! / 100).toFixed(2)
+				: product
+					? (product.sellPrice! / 100).toFixed(2)
+					: "0");
+		const margin = calculateMargin(buy, sell, defaultMargin);
+		setActiveMargin(margin);
 	}, [buyPrice, sellPrice, box, product, defaultMargin]);
 
 	const handleBoxBuyPriceChange = (value: string) => {
@@ -102,7 +100,9 @@ export default function BuyInFormClient({
 		} else {
 			const boxPriceNum = parseFloat(value);
 			if (!isNaN(boxPriceNum) && boxPriceNum >= 0 && box.itemsPerBox > 0) {
-				const individualBuyPrice = (boxPriceNum / box.itemsPerBox).toFixed(2);
+				const individualBuyPrice = (
+					Math.ceil((boxPriceNum / box.itemsPerBox) * 100) / 100
+				).toFixed(2);
 				setBuyPrice(individualBuyPrice);
 				if (!isCustomMargin) {
 					const newSellPrice = calculateSellPrice(
@@ -179,13 +179,17 @@ export default function BuyInFormClient({
 
 		try {
 			const finalBuyPrice = buyPrice
-				? Math.round(Number(buyPrice) * 100)
+				? Math.ceil(Number(buyPrice) * 100)
 				: box.buyPrice!;
 			const finalSellPrice = sellPrice
-				? Math.round(Number(sellPrice) * 100)
+				? Math.ceil(Number(sellPrice) * 100)
 				: box.sellPrice!;
 			if (!finalBuyPrice || !finalSellPrice) {
 				setError("Please enter valid buy and sell prices");
+				return;
+			}
+			if (finalBuyPrice <= 0 || finalSellPrice <= 0) {
+				setError("Buy and sell prices must be greater than 0");
 				return;
 			}
 
@@ -224,21 +228,25 @@ export default function BuyInFormClient({
 
 		try {
 			const finalBuyPrice = buyPrice
-				? Math.round(Number(buyPrice) * 100)
-				: product.buyPrice!;
+				? Math.ceil(Number(buyPrice) * 100)
+				: (product.buyPrice ?? 0);
 			const finalSellPrice = sellPrice
-				? Math.round(Number(sellPrice) * 100)
-				: product.sellPrice!;
+				? Math.ceil(Number(sellPrice) * 100)
+				: (product.sellPrice ?? 0);
 			if (!finalBuyPrice || !finalSellPrice) {
 				setError("Please enter valid buy and sell prices");
+				return;
+			}
+			if (finalBuyPrice <= 0 || finalSellPrice <= 0) {
+				setError("Buy and sell prices must be greater than 0");
 				return;
 			}
 
 			const formData = new FormData();
 			formData.append("barcode", product.barcode);
 			formData.append("count", quantityNum.toString());
-			formData.append("buyPrice", (finalBuyPrice / 100).toString());
-			formData.append("sellPrice", (finalSellPrice / 100).toString());
+			formData.append("buyPrice", finalBuyPrice.toString());
+			formData.append("sellPrice", finalSellPrice.toString());
 
 			const result = await buyInProductAction(null, formData);
 			if (result.success && result.newStock) {
@@ -258,12 +266,31 @@ export default function BuyInFormClient({
 	};
 
 	const totalItems = box && boxCount ? Number(boxCount) * box.itemsPerBox : 0;
+	const totalBoxBuyValue =
+		box && boxCount
+			? (buyPrice
+					? (Math.ceil(Number(buyPrice) * 100) / 100) * totalItems
+					: (box.buyPrice! / 100) * totalItems
+				)
+					.toFixed(2)
+					.replace(".", ",")
+			: "0,00";
 	const newBoxStock =
-		box && boxCount ? (box.productStock ?? 0) + totalItems : null;
+		box && boxCount ? (box.productStock ?? 0) + totalItems : 0;
+
+	const totalProductBuyValue =
+		product && productQuantity
+			? (buyPrice
+					? (Math.ceil(Number(buyPrice) * 100) / 100) * Number(productQuantity)
+					: (product.buyPrice! / 100) * Number(productQuantity)
+				)
+					.toFixed(2)
+					.replace(".", ",")
+			: "0,00";
 	const newProductStock =
 		product && productQuantity
 			? (product.stock ?? 0) + Number(productQuantity)
-			: null;
+			: 0;
 
 	const formatPriceForDisplay = (priceInCents?: number) => {
 		if (priceInCents === undefined || priceInCents === null) return "N/A";
@@ -376,14 +403,19 @@ export default function BuyInFormClient({
 								</div>
 								<div className="text-sm text-stone-500">
 									{isDefaultMargin
-										? `Default margin applied: ${(defaultMargin * 100).toFixed(0)}%`
-										: `Current margin: ${(activeMargin * 100).toFixed(0)}% (Default margin: ${(defaultMargin * 100).toFixed(0)}%)`}
+										? `Default margin applied: ${(defaultMargin * 100).toFixed(2)}%`
+										: `Current margin: ${(activeMargin * 100).toFixed(2)}% (Default margin: ${(defaultMargin * 100).toFixed(2)}%)`}
 								</div>
-								{boxCount && Number(boxCount) > 0 && (
-									<p className="text-sm">
-										<strong>Total items to add:</strong> {totalItems} (new
-										stock: {newBoxStock})
-									</p>
+								{box && (
+									<div className="flex flex-col gap-y-1">
+										<p className="text-sm">
+											<strong>Total items to add:</strong> {totalItems}
+											{totalItems > 0 && ` (new stock: ${newBoxStock})`}
+										</p>
+										<p className="text-sm">
+											<strong>Items total value:</strong> {totalBoxBuyValue} €
+										</p>
+									</div>
 								)}
 								<Button onClick={handleBoxBuyIn} className="mt-2">
 									Confirm Buy-In (Box)
@@ -465,14 +497,23 @@ export default function BuyInFormClient({
 								</div>
 								<div className="text-sm text-stone-500">
 									{isDefaultMargin
-										? `Default margin applied: ${(defaultMargin * 100).toFixed(0)}%`
-										: `Current margin: ${(activeMargin * 100).toFixed(0)}% (Default margin: ${(defaultMargin * 100).toFixed(0)}%)`}
+										? `Default margin applied: ${(defaultMargin * 100).toFixed(2)}%`
+										: `Current margin: ${(activeMargin * 100).toFixed(2)}% (Default margin: ${(defaultMargin * 100).toFixed(2)}%)`}
 								</div>
-								{productQuantity && Number(productQuantity) > 0 && (
-									<p className="text-sm">
-										<strong>Total items to add:</strong> {productQuantity} (new
-										stock: {newProductStock})
-									</p>
+								{product && (
+									<div className="flex flex-col gap-y-1">
+										<p className="text-sm">
+											<strong>Total items to add:</strong>{" "}
+											{productQuantity ? Number(productQuantity) : 0}
+											{productQuantity &&
+												Number(productQuantity) > 0 &&
+												` (new stock: ${newProductStock})`}
+										</p>
+										<p className="text-sm">
+											<strong>Items total value:</strong> {totalProductBuyValue}{" "}
+											€
+										</p>
+									</div>
 								)}
 								<Button type="submit" className="mt-2">
 									Confirm Buy-In (Product)
