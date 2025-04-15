@@ -47,6 +47,7 @@ export default function Reports() {
 						<div className="w-32 pl-6">Bottle/Can Returns (€)</div>
 						<div className="w-32 pl-6">Bank Deposits (€)</div>
 						<div className="w-32 pl-6">Cash Deposits (€)</div>
+            <div className="w-32 pl-6">Legacy Deposits (€)</div>
 						<div className="w-32 pl-6 font-bold">Total User Balance (€)</div>
 					</div>
 
