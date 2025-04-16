@@ -20,10 +20,7 @@ export default function ProductFilters() {
 		if (filterKey === "onlyInStock") {
 			setFilters({ onlyInStock: value, onlyOutOfStock: false });
 		} else {
-			setFilters({
-				onlyOutOfStock: value,
-				onlyInStock: false,
-			});
+			setFilters({ onlyOutOfStock: value, onlyInStock: false });
 		}
 	};
 
@@ -61,11 +58,8 @@ export default function ProductFilters() {
 			setFilters({ [field]: undefined });
 			return;
 		}
-
 		const numericValue = Number(value);
-		if (isNaN(numericValue)) {
-			return;
-		}
+		if (isNaN(numericValue)) return;
 		setFilters({ [field]: numericValue });
 	};
 
@@ -96,11 +90,11 @@ export default function ProductFilters() {
 					/>
 				</div>
 			</div>
+
 			<div className="flex flex-col gap-y-2 rounded-lg border p-4 mt-4">
 				<div className="flex justify-between items-center">
 					<p className="text-stone-500">Sort by price</p>
-					{(filters.sortByPrice === "asc" ||
-						filters.sortByPrice === "desc") && (
+					{filters.sortByPrice && (
 						<Button
 							variant="link"
 							size="sm"
@@ -144,11 +138,11 @@ export default function ProductFilters() {
 					</label>
 				</div>
 			</div>
+
 			<div className="flex flex-col gap-y-2 rounded-lg border p-4 mt-4">
 				<div className="flex justify-between items-center">
 					<p className="text-stone-500">Sort by quantity</p>
-					{(filters.sortByQuantity === "asc" ||
-						filters.sortByQuantity === "desc") && (
+					{filters.sortByQuantity && (
 						<Button
 							variant="link"
 							size="sm"
@@ -192,6 +186,7 @@ export default function ProductFilters() {
 					</label>
 				</div>
 			</div>
+
 			<div className="flex flex-col gap-y-2 rounded-lg border p-4 mt-4">
 				<div className="flex justify-between items-center">
 					<p className="text-stone-500">Filter by quantity</p>
@@ -226,7 +221,7 @@ export default function ProductFilters() {
 							onChange={({ target }) =>
 								handleQuantityChange("minQuantity", target.value)
 							}
-							className="w-20 h-10 text-center focus:outline-dashed focus:outline-2 focus:outline-gray-400 [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield]"
+							className="w-24 text-center [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield]"
 						/>
 					</div>
 					<div className="flex flex-col">
@@ -247,11 +242,12 @@ export default function ProductFilters() {
 							onChange={({ target }) =>
 								handleQuantityChange("maxQuantity", target.value)
 							}
-							className="w-20 h-10 text-center focus:outline-dashed focus:outline-2 focus:outline-gray-400 [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield]"
+							className="w-24 text-center [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield]"
 						/>
 					</div>
 				</div>
 			</div>
+
 			<div className="flex flex-col gap-y-2 rounded-lg border p-4 mt-4">
 				<div className="flex justify-between items-center">
 					<p className="text-stone-500">Show products by stock</p>
