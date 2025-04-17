@@ -524,7 +524,7 @@ export default function BuyInFormClient({
 								<p className="text-sm text-black-500">Loading data...</p>
 							</div>
 						)}
-						{error && <p className="text-sm text-black-500">{error}</p>}
+						{error && <p className="text-sm text-red-500">{error}</p>}
 					</div>
 				</div>
 			</div>
