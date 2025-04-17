@@ -9,6 +9,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { generateEAN13Barcode } from "@/lib/barcodeUtils";
 import { nextFieldOnEnter } from "@/lib/utils";
 import { addProductAction } from "@/server/actions/products";
+import { createBox } from "@/server/requests/boxRequests";
 import { Category } from "@/server/requests/categoryRequests";
 import { Product } from "@/server/requests/productRequests";
 import { Dice5 } from "lucide-react";
@@ -33,16 +34,54 @@ function AddProductFields({ categories }: { categories: Category[] }) {
 	useEffect(() => {
 		if (state.success && state.newProduct) {
 			const { newProduct: product } = state;
+			const boxBarcode = searchParams.get("boxBarcode");
+			const itemsPerBox = searchParams.get("itemsPerBox");
+
+			const handleRedirect = async () => {
+				try {
+					if (boxBarcode) {
+						if (itemsPerBox && Number(itemsPerBox) > 0) {
+							await createBox({
+								boxBarcode,
+								itemsPerBox: Number(itemsPerBox),
+								productBarcode: product.barcode.toString(),
+							});
+							toast({
+								title: "Box Created",
+								description: `Box with barcode ${boxBarcode} created successfully.`,
+								duration: 4000,
+							});
+							router.push(
+								`/admin/buy_in/product/${product.barcode}?type=box&boxBarcode=${boxBarcode}`,
+							);
+						} else {
+							router.push(
+								`/admin/new/${boxBarcode}/new-box?productBarcode=${product.barcode}`,
+							);
+						}
+					} else if (searchParams.has("barcode")) {
+						router.push(`/admin/new/${product.barcode}/box-prompt`);
+					} else {
+						router.push(`/admin/products/${product.barcode}`);
+					}
+				} catch (err: any) {
+					toast({
+						title: "Error",
+						description: "Failed to create box.",
+						variant: "destructive",
+						duration: 4000,
+					});
+				}
+			};
+
 			toast({
 				title: "Product Created",
 				description: `Product ${product.name} has been created`,
-				duration: 6000,
+				duration: 4000,
 			});
-			searchParams.has("barcode")
-				? router.push(`/admin/buy_in/product/${product.barcode}`)
-				: router.push(`/admin/products/${product.barcode}`);
+			handleRedirect();
 		}
-	}, [state.success, state.newProduct]);
+	}, [state.success, state.newProduct, router, searchParams, toast]);
 
 	const generateBarcode = () => {
 		const ean13Barcode = generateEAN13Barcode();
@@ -114,7 +153,17 @@ function AddProductFields({ categories }: { categories: Category[] }) {
 					Create Product
 				</SubmitButton>
 				<Button asChild variant="outline" className="w-full">
-					<Link href={`/admin/products`}>Back</Link>
+					<Link
+						href={
+							searchParams.get("boxBarcode")
+								? `/admin/new/${searchParams.get("boxBarcode")}/new-box`
+								: searchParams.get("barcode")
+									? "/admin/buy_in"
+									: "/admin/products"
+						}
+					>
+						Cancel
+					</Link>
 				</Button>
 			</div>
 		</>
