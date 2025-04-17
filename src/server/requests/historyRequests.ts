@@ -21,7 +21,7 @@ export type Deposit = {
 };
 export type getAllDepositsResponse = {
 	deposits: Deposit[];
-};
+}; 
 
 export async function getAllDeposits() {
 	"use server";
@@ -96,40 +96,44 @@ export async function getCurrentUserPurchases() {
 	).then((data) => data.purchases);
 }
 
-export async function getPagedDeposits(limit: number, offset: number) {
-  "use server";
+export async function getPagedDeposits(page: number, limit: number) {
+	"use server";
 
-  return await authenticated<getAllDepositsResponse>(
-    `${process.env.RV_BACKEND_URL}/${depositsUrl}`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ limit, offset }),
-      next: {
-        tags: [QueryKeys.purchases],
-      },
-    },
-  ).then((data) => data.deposits);
+	const offset = (page - 1) * limit;
+
+	return await authenticated<getAllDepositsResponse>(
+		`${process.env.RV_BACKEND_URL}/${adminDepositsUrl}`,
+		{
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ limit, offset }),
+            next: {
+                tags: [QueryKeys.deposits, offset.toString(), limit.toString()],
+            },
+        },
+	).then((data) => data.deposits);
 }
 
-export async function getPagedPurchases(limit: number, offset: number) {
-  "use server";
+export async function getPagedPurchases(page: number, limit: number) {
+	"use server";
 
-  return await authenticated<getAllPurchasesResponse>(
-    `${process.env.RV_BACKEND_URL}/${depositsUrl}`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ limit, offset }),
-      next: {
-        tags: [QueryKeys.purchases],
-      },
-    },
-  ).then((data) => data.purchases);
+	const offset = (page - 1) * 50;
+
+	return await authenticated<getAllPurchasesResponse>(
+		`${process.env.RV_BACKEND_URL}/${adminDepositsUrl}`,
+		{
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ limit, offset }),
+            next: {
+                tags: [QueryKeys.purchases, offset.toString(), limit.toString()],
+            },
+        },
+	).then((data) => data.purchases);
 }
 
 export type Transaction = Partial<Deposit> | Partial<Purchase>;
