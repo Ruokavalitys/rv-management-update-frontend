@@ -199,7 +199,7 @@ export default function Dashboard({
   const allLatestTransactions = useMemo(() => {
     return [...purchases]
       .sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime())
-      .slice(0, 10);
+      .slice(0, 20);
   }, [purchases]);
 
   const handleResetDates = () => {
@@ -247,7 +247,7 @@ export default function Dashboard({
                     value={customStartDate}
                     onChange={(e) => setCustomStartDate(e.target.value)}
                     max={getTodayDate()}
-                    className="w-full rounded border border-stone-300 p-1 text-sm font-normal"
+                    className="w-full rounded border border-stone-300 py-1 px-2 text-sm font-normal"
                     aria-label="Custom start date"
                   />
                   <input
@@ -255,7 +255,7 @@ export default function Dashboard({
                     value={customEndDate}
                     onChange={(e) => setCustomEndDate(e.target.value)}
                     max={getTodayDate()}
-                    className="w-full rounded border border-stone-300 p-1 text-sm font-normal"
+                    className="w-full rounded border border-stone-300 py-1 px-2 text-sm font-normal"
                     aria-label="Custom end date"
                   />
                   <button
@@ -350,9 +350,9 @@ export default function Dashboard({
               <CardTitle className="flex items-center gap-2">
                 <Clock /> Latest transactions
               </CardTitle>
-              <CardDescription>Latest 10 sales and returns</CardDescription>
+              <CardDescription>Latest 20 sales and returns</CardDescription>
             </CardHeader>
-            <CardContent className="grid grid-cols-[max-content_1fr] items-center gap-x-2">
+            <CardContent className="grid grid-cols-[max-content_200px_1fr] items-center gap-x-2">
               {allLatestTransactions.length > 0 ? (
                 allLatestTransactions.map((purchase, index) => {
                   const product = products.find((p) => p.barcode === purchase.product.barcode);
@@ -363,13 +363,16 @@ export default function Dashboard({
                         {purchase.returned ? "Returned" : "Sold"}
                       </span>
                       <span className="overflow-hidden text-ellipsis whitespace-nowrap">
-                        {truncateText(product.name, 30)} at {formatDateTime(new Date(purchase.time))}
+                        {truncateText(product.name, 30)}
+                      </span>
+                      <span className="text-sm text-stone-500 dark:text-stone-400 justify-self-end">
+                        {formatDateTime(new Date(purchase.time))}
                       </span>
                     </Fragment>
                   );
                 })
               ) : (
-                <span className="col-span-2 text-stone-500">No transactions available for this period.</span>
+                <span className="col-span-3 text-stone-500">No transactions available for this period.</span>
               )}
             </CardContent>
           </Card>
