@@ -4,32 +4,36 @@ import { authenticated } from "@/server/wrappers";
 
 const purchaseHistoryUrl = "api/v1/admin/purchaseHistory";
 const depositHistoryUrl = "api/v1/admin/depositHistory";
-const usersUrl = "api/v1/admin/users";
-
-type User = {
-  userId: number;
-  moneyBalance: number;
-};
 
 const toEuros = (cents: number): number => {
   return parseFloat((cents / 100).toFixed(2));
 };
 
-export async function getFinancialReports(startDate: string, endDate: string) {
+const getCurrentMonthEndDate = (): string => {
+  const now = new Date();
+  const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+  return endOfMonth.toISOString().split("T")[0];
+};
+
+const getFirstTransactionDate = (purchases: any[], deposits: any[]): string => {
+  const allTimes = [...purchases.map(p => p.time), ...deposits.map(d => d.time)];
+  return allTimes.length ? allTimes.sort()[0].split("T")[0] : "1970-01-01";
+};
+
+export async function getFinancialReports(startDate?: string, endDate: string = getCurrentMonthEndDate()) {
   const purchases = await authenticated(
     `${process.env.RV_BACKEND_URL}/${purchaseHistoryUrl}`,
     { method: "GET" }
-  ).then((data: unknown) => (data as { purchases: unknown[] }).purchases || []);
+  ).then((data: unknown) => (data as { purchases: any[] }).purchases || []);
 
   const deposits = await authenticated(
     `${process.env.RV_BACKEND_URL}/${depositHistoryUrl}`,
     { method: "GET" }
-  ).then((data: unknown) => (data as { deposits: unknown[] }).deposits || []);
+  ).then((data: unknown) => (data as { deposits: any[] }).deposits || []);
 
-  const users = await authenticated(
-    `${process.env.RV_BACKEND_URL}/${usersUrl}`,
-    { method: "GET" }
-  ).then((data: unknown) => (data as { users: User[] }).users || []);
+  if (!startDate) {
+    startDate = getFirstTransactionDate(purchases, deposits);
+  }
 
   const filteredPurchases = purchases.filter(
     (p) => p.time >= startDate && p.time <= endDate
@@ -40,10 +44,9 @@ export async function getFinancialReports(startDate: string, endDate: string) {
 
   const monthlyReports: Record<string, any> = {};
 
-  filteredPurchases.forEach((p) => {
-    const month = p.time.substring(0, 7);
-    const productName = p.product?.name || "";
+  const getMonth = (time: string) => time.substring(0, 7);
 
+  const ensureMonth = (month: string) => {
     if (!monthlyReports[month]) {
       monthlyReports[month] = {
         month,
@@ -56,69 +59,86 @@ export async function getFinancialReports(startDate: string, endDate: string) {
         totalUserBalance: 0,
       };
     }
+    return monthlyReports[month];
+  };
 
-    if (
-      productName.toLowerCase().includes("bottle return") ||
-      productName.toLowerCase().includes("can return")
-    ) {
-      monthlyReports[month].bottleReturns += toEuros(p.price);
+  filteredPurchases.forEach((p) => {
+    const month = getMonth(p.time);
+    const report = ensureMonth(month);
+    const productName = p.product?.name?.toLowerCase() || "";
+
+    if (productName.includes("bottle return") || productName.includes("can return")) {
+      report.bottleReturns += toEuros(p.price);
     } else if (p.returned) {
-      monthlyReports[month].productReturns += -toEuros(p.price);
+      report.productReturns += -toEuros(p.price);
     } else {
-      monthlyReports[month].purchases += toEuros(p.price);
+      report.purchases += toEuros(p.price);
     }
   });
 
   filteredDeposits.forEach((d) => {
-    const month = d.time.substring(0, 7); // YYYY-MM
-
-    if (!monthlyReports[month]) {
-      monthlyReports[month] = {
-        month,
-        bottleReturns: 0,
-        purchases: 0,
-        productReturns: 0,
-        bankDeposits: 0,
-        cashDeposits: 0,
-        legacyDeposits: 0,
-        totalUserBalance: 0,
-      };
-    }
+    const month = getMonth(d.time);
+    const report = ensureMonth(month);
 
     if (d.type === 17) {
-      monthlyReports[month].legacyDeposits += toEuros(d.amount);
+      report.legacyDeposits += toEuros(d.amount);
     } else if (d.type === 27) {
-      monthlyReports[month].bankDeposits += toEuros(d.amount);
+      report.bankDeposits += toEuros(d.amount);
     } else if (d.type === 26) {
-      monthlyReports[month].cashDeposits += toEuros(d.amount);
+      report.cashDeposits += toEuros(d.amount);
     } else {
       console.warn(`⚠️ Unknown deposit type: ${d.type}`);
     }
   });
 
-  const totalUserBalance = toEuros(
-    users.reduce((sum, user) => sum + user.moneyBalance, 0)
-  );
+  const allTransactions: { time: string; userId: number; amount: number }[] = [];
 
-  const lastMonth = Object.keys(monthlyReports).sort().pop();
-  if (lastMonth) {
-    monthlyReports[lastMonth].totalUserBalance = totalUserBalance;
-  }
+  deposits.forEach((d) => {
+    allTransactions.push({
+      time: d.time,
+      userId: d.user.userId,
+      amount: d.amount,
+    });
+  });
+
+  purchases.forEach((p) => {
+    allTransactions.push({
+      time: p.time,
+      userId: p.user.userId,
+      amount: p.returned ? p.price : -p.price,
+    });
+  });
+
+  allTransactions.sort((a, b) => a.time.localeCompare(b.time));
+
+  const userBalances: Record<number, number> = {};
+  const monthUserBalances: Record<string, number> = {};
+
+  allTransactions.forEach((tx) => {
+    const month = getMonth(tx.time);
+    userBalances[tx.userId] = (userBalances[tx.userId] || 0) + tx.amount;
+    monthUserBalances[month] = Object.values(userBalances).reduce((sum, b) => sum + b, 0);
+  });
+
+  Object.entries(monthlyReports).forEach(([month, report]) => {
+    const bal = monthUserBalances[month];
+    report.totalUserBalance = bal !== undefined ? toEuros(bal) : 0;
+  });
 
   const sortedMonthly = Object.keys(monthlyReports)
     .sort()
     .map((month) => monthlyReports[month]);
 
   const total = sortedMonthly.reduce(
-    (acc, report) => ({
+    (acc, r) => ({
       month: "TOTAL",
-      bottleReturns: acc.bottleReturns + report.bottleReturns,
-      purchases: acc.purchases + report.purchases,
-      productReturns: acc.productReturns + report.productReturns,
-      bankDeposits: acc.bankDeposits + report.bankDeposits,
-      cashDeposits: acc.cashDeposits + report.cashDeposits,
-      legacyDeposits: acc.legacyDeposits + report.legacyDeposits,
-      totalUserBalance: report.totalUserBalance,
+      bottleReturns: acc.bottleReturns + r.bottleReturns,
+      purchases: acc.purchases + r.purchases,
+      productReturns: acc.productReturns + r.productReturns,
+      bankDeposits: acc.bankDeposits + r.bankDeposits,
+      cashDeposits: acc.cashDeposits + r.cashDeposits,
+      legacyDeposits: acc.legacyDeposits + r.legacyDeposits,
+      totalUserBalance: r.totalUserBalance,
     }),
     {
       month: "TOTAL",
@@ -132,32 +152,30 @@ export async function getFinancialReports(startDate: string, endDate: string) {
     }
   );
 
-  const roundAndFormat = (val: number) => parseFloat(val.toFixed(2));
+  const round = (val: number) => parseFloat(val.toFixed(2));
 
   const formattedReports = [
     ...sortedMonthly.map((r) => ({
       ...r,
-      purchases: roundAndFormat(r.purchases),
-      productReturns: roundAndFormat(r.productReturns),
-      bottleReturns: roundAndFormat(r.bottleReturns),
-      bankDeposits: roundAndFormat(r.bankDeposits),
-      cashDeposits: roundAndFormat(r.cashDeposits),
-      legacyDeposits: roundAndFormat(r.legacyDeposits),
-      totalUserBalance: roundAndFormat(r.totalUserBalance),
+      purchases: round(r.purchases),
+      productReturns: round(r.productReturns),
+      bottleReturns: round(r.bottleReturns),
+      bankDeposits: round(r.bankDeposits),
+      cashDeposits: round(r.cashDeposits),
+      legacyDeposits: round(r.legacyDeposits),
+      totalUserBalance: round(r.totalUserBalance),
     })),
     {
       ...total,
-      purchases: roundAndFormat(total.purchases),
-      productReturns: roundAndFormat(total.productReturns),
-      bottleReturns: roundAndFormat(total.bottleReturns),
-      bankDeposits: roundAndFormat(total.bankDeposits),
-      cashDeposits: roundAndFormat(total.cashDeposits),
-      legacyDeposits: roundAndFormat(total.legacyDeposits), 
-      totalUserBalance: roundAndFormat(total.totalUserBalance),
+      purchases: round(total.purchases),
+      productReturns: round(total.productReturns),
+      bottleReturns: round(total.bottleReturns),
+      bankDeposits: round(total.bankDeposits),
+      cashDeposits: round(total.cashDeposits),
+      legacyDeposits: round(total.legacyDeposits),
+      totalUserBalance: round(total.totalUserBalance),
     },
   ];
 
   return formattedReports;
 }
-
-
