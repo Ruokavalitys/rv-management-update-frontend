@@ -28,6 +28,7 @@ import {
   ShoppingCart,
   TrendingUp,
 } from "lucide-react";
+import Link from "next/link";
 import { Fragment, useMemo, useState } from "react";
 
 const numberFormatter = Intl.NumberFormat("fi-FI");
@@ -311,7 +312,12 @@ export default function Dashboard({
                   <span className="text-right text-sm text-stone-500 dark:text-stone-400">
                     {numberFormatter.format(product.stock)}
                   </span>
-                  <span>{product.name}</span>
+                  <Link
+                    href={`/admin/products/${product.barcode}`}
+                    className="hover:underline text-stone-900 dark:text-stone-100"
+                  >
+                    {product.name}
+                  </Link>
                 </Fragment>
               ))}
             </CardContent>
@@ -334,7 +340,12 @@ export default function Dashboard({
                       <span className="text-right text-sm text-stone-500 dark:text-stone-400">
                         {numberFormatter.format(count)}
                       </span>
-                      <span>{product?.name || "Unknown Product"}</span>
+                      <Link
+                        href={`/admin/products/${barcode}`}
+                        className="hover:underline text-stone-900 dark:text-stone-100"
+                      >
+                        {product?.name || "Unknown Product"}
+                      </Link>
                     </Fragment>
                   );
                 })
@@ -362,9 +373,12 @@ export default function Dashboard({
                       <span className="text-right text-sm text-stone-500 dark:text-stone-400">
                         {purchase.returned ? "Returned" : "Sold"}
                       </span>
-                      <span className="overflow-hidden text-ellipsis whitespace-nowrap">
+                      <Link
+                        href={`/admin/products/${product.barcode}`}
+                        className="overflow-hidden text-ellipsis whitespace-nowrap hover:underline text-stone-900 dark:text-stone-100"
+                      >
                         {truncateText(product.name, 30)}
-                      </span>
+                      </Link>
                       <span className="text-sm text-stone-500 dark:text-stone-400 justify-self-end">
                         {formatDateTime(new Date(purchase.time))}
                       </span>
