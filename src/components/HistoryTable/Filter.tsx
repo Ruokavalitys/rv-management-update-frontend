@@ -5,8 +5,23 @@ import { Input } from "@/components/ui/input";
 import { usePartialSetAtom } from "@/lib/utils";
 import { useAtomValue } from "jotai";
 import { atomWithReset, useHydrateAtoms, useResetAtom } from "jotai/utils";
+import { useState } from "react";
 
 const filtersAtom = atomWithReset({});
+
+const getTodayDate = (): string => {
+	const today = new Date();
+	const year = today.getFullYear();
+	const month = (today.getMonth() + 1).toString().padStart(2, "0");
+	const day = today.getDate().toString().padStart(2, "0");
+	return `${year}-${month}-${day}`;
+};
+
+const getDateOnly = (date: Date): Date => {
+	return new Date(
+		Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()),
+	);
+};
 
 export default function Filter({
 	filtersAtom: filtersAtomFromServer,
@@ -24,15 +39,43 @@ export default function Filter({
 	const setFilters = usePartialSetAtom(filtersAtomFromServer);
 	const resetFilters = useResetAtom(filtersAtomFromServer);
 	const filters = useAtomValue(filtersAtomFromServer);
+	const [error, setError] = useState<string | null>(null);
 
-	const resetDateFilter = () =>
+	const resetDateFilter = () => {
 		setFilters({ fromDate: undefined, toDate: undefined });
+		setError(null);
+	};
 
 	const handleDateChange = (field: "fromDate" | "toDate", value: string) => {
+		setError(null);
+
 		if (value === "") {
 			setFilters({ [field]: undefined });
 			return;
 		}
+
+		const newDate = new Date(value);
+		const today = getDateOnly(new Date());
+
+		if (getDateOnly(newDate) > today) {
+			setError("Dates cannot be in the future.");
+			return;
+		}
+
+		if (field === "fromDate" && filters.toDate) {
+			const toDate = new Date(filters.toDate);
+			if (newDate > toDate) {
+				setError("Start date must be before end date.");
+				return;
+			}
+		} else if (field === "toDate" && filters.fromDate) {
+			const fromDate = new Date(filters.fromDate);
+			if (newDate < fromDate) {
+				setError("Start date must be before end date.");
+				return;
+			}
+		}
+
 		setFilters({ [field]: value });
 	};
 
@@ -42,6 +85,7 @@ export default function Filter({
 			<Button
 				onClick={() => {
 					resetFilters();
+					setError(null);
 				}}
 				className="w-full"
 				variant={"outline"}
@@ -79,7 +123,8 @@ export default function Filter({
 							onChange={({ target }) =>
 								handleDateChange("fromDate", target.value)
 							}
-							className="w-36 h-10 text-center focus:outline-dashed focus:outline-2 focus:outline-gray-400"
+							max={getTodayDate()}
+							className="w-32 text-center [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield]"
 						/>
 					</div>
 					<div className="flex flex-col">
@@ -93,10 +138,16 @@ export default function Filter({
 							onChange={({ target }) =>
 								handleDateChange("toDate", target.value)
 							}
-							className="w-36 h-10 text-center focus:outline-dashed focus:outline-2 focus:outline-gray-400"
+							max={getTodayDate()}
+							className="w-32 text-center [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield]"
 						/>
 					</div>
 				</div>
+				{error && (
+					<span className="text-red-500 text-sm whitespace-nowrap">
+						{error}
+					</span>
+				)}
 			</div>
 		</div>
 	);
