@@ -1,38 +1,50 @@
 'use client'
 
-import { Deposit, downloadDepositReport, getDeposits } from "@/server/requests/reportDepositService"
-import { useEffect, useState } from "react"
+import { Deposit, getAllDeposits } from "@/server/requests/reportDepositService";
+import { useEffect, useState } from "react";
+import DownloadDepositButton from "./DownloadDepositButton";
 
 export default function DepositReport() {
-  const [deposits, setDeposits] = useState<Deposit[]>([])
-  const [nameFilter, setNameFilter] = useState('')
+  const [deposits, setDeposits] = useState<Deposit[]>([]);
+  const [startDate, setStartDate] = useState('2000-01-01');
+  const [endDate, setEndDate] = useState('2025-12-31');
+  const [nameFilter, setNameFilter] = useState('');
 
   useEffect(() => {
     const fetchDeposits = async () => {
-      const data = await getDeposits()
-      setDeposits(data)
-    }
-    fetchDeposits()
-  }, [])
-
-  const filteredDeposits = deposits.filter(d =>
-    d.name.toLowerCase().includes(nameFilter.toLowerCase())
-  )
+      const data = await getAllDeposits(startDate, endDate, nameFilter);
+      setDeposits(data);
+    };
+    fetchDeposits();
+  }, [startDate, endDate, nameFilter]);
 
   return (
     <div className="p-4">
       <h2 className="text-xl font-semibold mb-2">Deposit Report</h2>
-      <p className="mb-4">Voit hakea tässä vaiheessa nimillä Juho, Mette, Matt, Sami, Maria</p>
 
-      <input
-        type="text"
-        placeholder="Enter name"
-        value={nameFilter}
-        onChange={(e) => setNameFilter(e.target.value)}
-        className="border px-2 py-1 mb-4 mr-2 rounded"
-      />
+      <div className="flex flex-wrap gap-2 mb-4">
+        <input
+          type="date"
+          value={startDate}
+          onChange={(e) => setStartDate(e.target.value)}
+          className="border px-2 py-1 rounded"
+        />
+        <input
+          type="date"
+          value={endDate}
+          onChange={(e) => setEndDate(e.target.value)}
+          className="border px-2 py-1 rounded"
+        />
+        <input
+          type="text"
+          placeholder="Filter by name"
+          value={nameFilter}
+          onChange={(e) => setNameFilter(e.target.value)}
+          className="border px-2 py-1 rounded"
+        />
+      </div>
 
-      {nameFilter && (
+      {deposits.length > 0 && (
         <>
           <table className="w-full border-collapse border mb-4">
             <thead>
@@ -44,7 +56,7 @@ export default function DepositReport() {
               </tr>
             </thead>
             <tbody>
-              {filteredDeposits.map((deposit, index) => (
+              {deposits.map((deposit, index) => (
                 <tr key={index}>
                   <td className="border px-4 py-2">{deposit.name}</td>
                   <td className="border px-4 py-2">{deposit.datetime}</td>
@@ -55,14 +67,9 @@ export default function DepositReport() {
             </tbody>
           </table>
 
-          <button
-            onClick={() => downloadDepositReport(filteredDeposits)}
-            className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded"
-          >
-            Download as CSV
-          </button>
+          <DownloadDepositButton deposits={deposits} />
         </>
       )}
     </div>
-  )
+  );
 }

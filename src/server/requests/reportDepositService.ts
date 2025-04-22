@@ -1,38 +1,44 @@
+"use server";
+
+import { authenticated } from "@/server/wrappers";
+
+const depositHistoryUrl = "api/v1/admin/depositHistory";
+
 export type Deposit = {
-  name: string
-  datetime: string
-  amount: number
-  type: 'cash' | 'bank'
-}
+  name: string;
+  datetime: string;
+  amount: number;
+  type: "cash" | "bank" | "legacy" | "unknown";
+};
 
-export async function getDeposits(): Promise<Deposit[]> {
-  return [
-    { name: 'Juho', datetime: '2025-04-01 09:00', amount: 40, type: 'bank' },
-    { name: 'Juho', datetime: '2025-04-05 14:20', amount: 25, type: 'cash' },
-    { name: 'Mette', datetime: '2025-04-02 11:30', amount: 35, type: 'cash' },
-    { name: 'Mette', datetime: '2025-04-07 16:10', amount: 45, type: 'bank' },
-    { name: 'Matt', datetime: '2025-04-03 08:45', amount: 60, type: 'bank' },
-    { name: 'Matt', datetime: '2025-04-06 13:15', amount: 20, type: 'cash' },
-    { name: 'Sami', datetime: '2025-04-04 10:00', amount: 55, type: 'bank' },
-    { name: 'Sami', datetime: '2025-04-08 15:50', amount: 30, type: 'cash' },
-    { name: 'Maria', datetime: '2025-04-01 12:00', amount: 50, type: 'bank' },
-    { name: 'Maria', datetime: '2025-04-09 17:25', amount: 40, type: 'cash' },
-  ]
-}
+const toEuros = (cents: number): number => {
+  return parseFloat((cents / 100).toFixed(2));
+};
 
-export function downloadDepositReport(deposits: Deposit[]) {
-  const header = ['Name', 'Date & Time', 'Amount', 'Type']
-  const rows = deposits.map(d => [d.name, d.datetime, d.amount.toFixed(2), d.type])
+export async function getAllDeposits(startDate: string, endDate: string, nameFilter?: string): Promise<Deposit[]> {
+  const data = await authenticated(`${process.env.RV_BACKEND_URL}/${depositHistoryUrl}`, {
+    method: "GET",
+  }).then((res) => (res as { deposits: any[] }).deposits || []);
 
-  const csvContent =
-    'data:text/csv;charset=utf-8,' +
-    [header, ...rows].map(row => row.join(',')).join('\n')
+  return data
+    .filter((d) => {
+      const date = d.time.split("T")[0];
+      const name = d.user.fullName || d.user.username;
+      const matchesDate = date >= startDate && date <= endDate;
+      const matchesName = nameFilter ? name.toLowerCase().includes(nameFilter.toLowerCase()) : true;
+      return matchesDate && matchesName;
+    })
+    .map((d) => {
+      let type: Deposit["type"] = "unknown";
+      if (d.type === 26) type = "cash";
+      else if (d.type === 27) type = "bank";
+      else if (d.type === 17) type = "legacy";
 
-  const encodedUri = encodeURI(csvContent)
-  const link = document.createElement('a')
-  link.setAttribute('href', encodedUri)
-  link.setAttribute('download', 'deposit_report.csv')
-  document.body.appendChild(link)
-  link.click()
-  document.body.removeChild(link)
+      return {
+        name: d.user.fullName || d.user.username,
+        datetime: d.time.replace("T", " ").substring(0, 16),
+        amount: toEuros(d.amount),
+        type,
+      };
+    });
 }

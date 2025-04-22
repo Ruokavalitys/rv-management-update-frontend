@@ -6,8 +6,8 @@ import DownloadReportButton from "./DownloadReportButton";
 import { ReportRow } from "./ReportRow";
 
 export default function Reports() {
-	const [startDate, setStartDate] = useState("2000-01-01");
-	const [endDate, setEndDate] = useState("2025-12-31");
+	const [startDate, setStartDate] = useState<string | undefined>(undefined);
+	const [endDate, setEndDate] = useState<string | undefined>(undefined);
 	const [reports, setReports] = useState([]);
 
 	useEffect(() => {
@@ -25,7 +25,7 @@ export default function Reports() {
 				<label className="font-medium">Start Date:</label>
 				<input
 					type="month"
-					value={startDate.substring(0, 7)}
+					value={startDate?.substring(0, 7) || ""}
 					onChange={(e) => setStartDate(`${e.target.value}-01`)}
 					className="border p-2 rounded"
 				/>
@@ -33,11 +33,12 @@ export default function Reports() {
 				<label className="font-medium">End Date:</label>
 				<input
 					type="month"
-					value={endDate.substring(0, 7)}
+					value={endDate?.substring(0, 7) || ""}
 					onChange={(e) => setEndDate(`${e.target.value}-31`)}
 					className="border p-2 rounded"
 				/>
 			</div>
+
 			<div className="h-full font-medium text-gray-700 min-h-0 w-full overflow-y-auto overscroll-none rounded-lg border shadow-lg">
 				<div>
 					<div className="flex items-center justify-start border-b border-gray-400 bg-gray-100 p-4 font-bold">
@@ -47,6 +48,7 @@ export default function Reports() {
 						<div className="w-32 pl-6">Bottle/Can Returns (€)</div>
 						<div className="w-32 pl-6">Bank Deposits (€)</div>
 						<div className="w-32 pl-6">Cash Deposits (€)</div>
+						<div className="w-32 pl-6">Legacy Deposits (€)</div>
 						<div className="w-32 pl-6 font-bold">Total User Balance (€)</div>
 					</div>
 
@@ -62,4 +64,3 @@ export default function Reports() {
 		</div>
 	);
 }
-

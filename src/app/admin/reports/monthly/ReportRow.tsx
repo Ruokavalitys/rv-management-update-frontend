@@ -5,6 +5,7 @@ type Report = {
 	productReturns: number;
 	bankDeposits: number;
 	cashDeposits: number;
+  legacyDeposits: number;
 	totalUserBalance: number;
 };
 
@@ -19,6 +20,7 @@ export function ReportRow({ report, isTotal }: { report: Report; isTotal?: boole
 			<div className="w-32 pl-6">{report.bottleReturns} €</div>
 			<div className="w-32 pl-6">{report.bankDeposits} €</div>
 			<div className="w-32 pl-6">{report.cashDeposits} €</div>
+      <div className="w-32 pl-6">{report.legacyDeposits} €</div>
 			<div className="w-32 pl-6 font-bold">{report.totalUserBalance} €</div>
 		</div>
 	);
