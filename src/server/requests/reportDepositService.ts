@@ -20,8 +20,6 @@ export async function getAllDeposits(startDate: string, endDate: string, nameFil
     method: "GET",
   }).then((res) => (res as { deposits: any[] }).deposits || []);
 
-  console.log("📦 Raw deposit data:", data.slice(0, 5));
-
   return data
     .filter((d) => {
       const date = d.time.split("T")[0];
