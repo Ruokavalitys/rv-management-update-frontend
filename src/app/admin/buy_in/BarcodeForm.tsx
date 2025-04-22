@@ -15,11 +15,20 @@ type OwnProps = {
 export default function BuyInBarcodeForm({ products, boxes }: OwnProps) {
 	const router = useRouter();
 	const [isFocused, setIsFocused] = useState(false);
+	const [error, setError] = useState<string | null>(null);
 
 	const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
 		const formData = new FormData(e.currentTarget);
 		const barcode = formData.get("barcode") as string;
+
+		if (!/^\d{1,14}$/.test(barcode)) {
+			setError("Barcode must be 1 to 14 digits.");
+			return;
+		}
+
+		setError(null);
+
 		if (
 			products.every((product) => product.barcode !== barcode) &&
 			boxes.every((box) => box.boxBarcode !== barcode)
@@ -30,15 +39,22 @@ export default function BuyInBarcodeForm({ products, boxes }: OwnProps) {
 		router.push(`/admin/buy_in/product/${barcode}`);
 	};
 
+	const allowOnlyDigits = (e: React.FormEvent<HTMLInputElement>) => {
+		const input = e.nativeEvent as InputEvent;
+		if (input.data && /\D/.test(input.data)) {
+			e.preventDefault();
+		}
+	};
+
 	return (
 		<form
-			className="flex flex-col w-full max-w-3xl space-y-4"
+			className="flex flex-col w-full max-w-3xl space-y-4 mx-auto"
 			onSubmit={onSubmit}
 			autoComplete="off"
 		>
 			<label
 				htmlFor="barcode"
-				className="text-sm font-medium text-stone-800 tracking-wide"
+				className="text-sm font-medium text-stone-700 tracking-wide translate-x-[-5%]"
 			>
 				Enter barcode
 			</label>
@@ -48,10 +64,22 @@ export default function BuyInBarcodeForm({ products, boxes }: OwnProps) {
 					name="barcode"
 					required
 					autoFocus
-					className="w-full text-base"
+					inputMode="numeric"
+					pattern="[0-9]*"
+					type="text"
+					maxLength={14}
+					onBeforeInput={allowOnlyDigits}
+					className="text-base"
+					containerClassName="w-[110%] flex justify-center translate-x-[-5%]"
 					onFocus={() => setIsFocused(true)}
 					onBlur={() => setIsFocused(false)}
 				/>
+				<p className="text-xs text-stone-500 mt-2 text-center">
+					Barcodes must contain digits only
+				</p>
+				{error && (
+					<p className="text-xs text-red-500 mt-2 text-center">{error}</p>
+				)}
 			</div>
 			<div className="flex justify-center">
 				<Button type="submit" className="w-fit">

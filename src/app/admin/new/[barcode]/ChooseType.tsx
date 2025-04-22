@@ -55,7 +55,7 @@ export const ChooseType = ({ barcode }: { barcode: string }) => {
 						id="create-box"
 						title="Shortcut: B"
 					>
-						<Link href={`/admin/new/box?barcode=${barcode}`}>Create [B]ox</Link>
+						<Link href={`/admin/new/${barcode}/new-box`}>Create [B]ox</Link>
 					</Button>
 					<Button asChild variant="outline" id="cancel" title="Shortcut: C">
 						<Link href={`/admin/buy_in`}>[C]ancel</Link>
