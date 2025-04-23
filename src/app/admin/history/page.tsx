@@ -1,7 +1,6 @@
 import { TableAndFilter } from "@/components/HistoryTable/TableAndFilter";
 import { HeaderTab } from "@/components/ui/header-tab";
 import {
-
   getPagedDeposits,
   getPagedPurchases,
 } from "@/server/requests/historyRequests";
@@ -9,7 +8,7 @@ import { historyTabs } from "./layout";
 
 export default async function HistoryPage() {
   const page = 1;
-  const limit = 50;
+  const limit = 100;
 
   const deposits = await getPagedDeposits(page, limit);
   const purchases = await getPagedPurchases(page, limit);

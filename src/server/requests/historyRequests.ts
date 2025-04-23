@@ -108,12 +108,15 @@ export async function getPagedDeposits(page: number, limit: number) {
             headers: {
                 "Content-Type": "application/json",
             },
-            body: JSON.stringify({ limit, offset }),
             next: {
                 tags: [QueryKeys.deposits, offset.toString(), limit.toString()],
             },
         },
-	).then((data) => data.deposits);
+		{ limit, offset }
+	).then((data) => {
+		console.log("getPagedDeposits raw response:", data);
+		return data.deposits;
+	});
 }
 
 export async function getPagedPurchases(page: number, limit: number) {
@@ -122,18 +125,21 @@ export async function getPagedPurchases(page: number, limit: number) {
 	const offset = (page - 1) * 50;
 
 	return await authenticated<getAllPurchasesResponse>(
-		`${process.env.RV_BACKEND_URL}/${adminDepositsUrl}`,
+		`${process.env.RV_BACKEND_URL}/${adminPurchasesUrl}`,
 		{
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
             },
-            body: JSON.stringify({ limit, offset }),
             next: {
                 tags: [QueryKeys.purchases, offset.toString(), limit.toString()],
             },
         },
-	).then((data) => data.purchases);
+		{ limit, offset }
+	).then((data) => {
+		console.log("getPagedPurchases raw response:", data);
+		return data.purchases;
+	});
 }
 
 export type Transaction = Partial<Deposit> | Partial<Purchase>;
