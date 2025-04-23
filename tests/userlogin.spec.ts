@@ -23,9 +23,7 @@ test("User cat login and nav displays correct username and profile link", async 
 	const userId = href!.split("/").pop();
 	await userLink.click();
 	await page.waitForURL(new RegExp(`/users/${userId}`));
-	await expect(
-		page.locator("p.text-stone-500").filter({ hasText: username }),
-	).toBeVisible();
+	await expect(page.locator("h1").filter({ hasText: username })).toBeVisible();
 });
 
 test("User can logout", async ({ page }) => {
