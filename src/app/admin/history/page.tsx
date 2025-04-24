@@ -6,20 +6,16 @@ import {
 } from "@/server/requests/historyRequests";
 import { historyTabs } from "./layout";
 
-export default async function HistoryPage() {
-  const page = 1;
-  const limit = 100;
+export default async function HistoryPage({ searchParams }: { searchParams: { page?: string; limit?: string } }) {
+  const page = parseInt(searchParams.page || "1", 10);
+  const limit = parseInt(searchParams.limit || "10", 10);
 
   const deposits = await getPagedDeposits(page, limit);
   const purchases = await getPagedPurchases(page, limit);
-
-  const combinedData = [...purchases, ...deposits].sort((a, b) => {
-    return new Date(b.time).getTime() - new Date(a.time).getTime();
-  });
+  const combinedData = [...purchases, ...deposits].sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime());
 
   return (
     <>
-      <div>{combinedData.length} TOTAL LENGTH</div>
       <HeaderTab tabs={historyTabs} selectedTab="Overview" />
       <div className="flex h-full min-h-0 w-full flex-row justify-between gap-x-8">
         <TableAndFilter initialData={combinedData} />

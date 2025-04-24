@@ -24,24 +24,13 @@ export async function authenticated<TResponse>(
 			: undefined,
 	};
 
-	console.log("Request Headers:", {
-		Authorization: `Bearer ${session.user.accessToken}`,
-		"Content-Type": "application/json",
-		...config.headers,
-	});
-	console.log("Request Body--:", body);
-
-	
-
-	const headers = {
-		Authorization: `Bearer ${session.user.accessToken}`,
-		"Content-Type": "application/json",
-		...(config.headers || {}),
-	  };
-
 	const response = await fetch(url, {
 		...cleanedConfig,
-		headers,
+		headers: {
+			Authorization: `Bearer ${session.user.accessToken}`,
+			"Content-Type": "application/json",
+			...(config.headers || {}),
+		  },
 		body: body ? JSON.stringify(body) : undefined,
 	});
 	if (!response.ok) {

@@ -114,7 +114,6 @@ export async function getPagedDeposits(page: number, limit: number) {
         },
 		{ limit, offset }
 	).then((data) => {
-		console.log("getPagedDeposits raw response:", data);
 		return data.deposits;
 	});
 }
@@ -122,7 +121,7 @@ export async function getPagedDeposits(page: number, limit: number) {
 export async function getPagedPurchases(page: number, limit: number) {
 	"use server";
 
-	const offset = (page - 1) * 50;
+	const offset = (page - 1) * limit;
 
 	return await authenticated<getAllPurchasesResponse>(
 		`${process.env.RV_BACKEND_URL}/${adminPurchasesUrl}`,
@@ -137,7 +136,6 @@ export async function getPagedPurchases(page: number, limit: number) {
         },
 		{ limit, offset }
 	).then((data) => {
-		console.log("getPagedPurchases raw response:", data);
 		return data.purchases;
 	});
 }
