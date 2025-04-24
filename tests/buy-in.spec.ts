@@ -2,22 +2,25 @@ import { expect, test } from "@playwright/test";
 import { login } from "./fixtures/login";
 import { getRandomBarcode, getRandomName } from "./utils/random";
 
-let randomBarcode: string;
-let randomProductName: string;
+declare module "@playwright/test" {
+	interface TestInfo {
+		data: { randomBarcode: string; randomProductName: string };
+	}
+}
 
-test.beforeAll(async () => {
-	randomBarcode = await getRandomBarcode();
-	randomProductName = await getRandomName();
-});
-
-test.beforeEach(async ({ page }) => {
+test.beforeEach(async ({ page }, testInfo) => {
+	const randomBarcode = await getRandomBarcode();
+	const randomProductName = await getRandomName();
+	testInfo.data = { randomBarcode, randomProductName };
 	await login(page);
 	await page.goto("/admin/buy_in");
 });
 
 test("Input unknown barcode, select product, attach a box and finish buy-in", async ({
 	page,
-}) => {
+}, testInfo) => {
+	const { randomBarcode, randomProductName } = testInfo.data;
+
 	await page.getByLabel("Enter barcode").fill(randomBarcode);
 	await page.getByRole("button", { name: /buy in/i }).click();
 	await expect(page).toHaveURL(`/admin/new/${randomBarcode}`);
@@ -79,7 +82,9 @@ test("Input unknown barcode, select product, attach a box and finish buy-in", as
 
 test("Input unknown barcode, select product and finish buy-in without attaching a box", async ({
 	page,
-}) => {
+}, testInfo) => {
+	const { randomBarcode, randomProductName } = testInfo.data;
+
 	await page.getByLabel("Enter barcode").fill(randomBarcode);
 	await page.getByRole("button", { name: /buy in/i }).click();
 	await expect(page).toHaveURL(`/admin/new/${randomBarcode}`);
@@ -126,7 +131,9 @@ test("Input unknown barcode, select product and finish buy-in without attaching 
 
 test("Input unknown barcode, select box, attach product, test dropdown cancel button, attach product again and finish buy-in", async ({
 	page,
-}) => {
+}, testInfo) => {
+	const { randomBarcode } = testInfo.data;
+
 	await page.getByLabel("Enter barcode").fill(randomBarcode);
 	await page.getByRole("button", { name: /buy in/i }).click();
 	await expect(page).toHaveURL(`/admin/new/${randomBarcode}`);
@@ -183,7 +190,9 @@ test("Input unknown barcode, select box, attach product, test dropdown cancel bu
 
 test("Input unknown barcode, select box, create new product, and finish buy-in", async ({
 	page,
-}) => {
+}, testInfo) => {
+	const { randomBarcode, randomProductName } = testInfo.data;
+
 	await page.getByLabel("Enter barcode").fill(randomBarcode);
 	await page.getByRole("button", { name: /buy in/i }).click();
 	await expect(page).toHaveURL(`/admin/new/${randomBarcode}`);
@@ -245,7 +254,9 @@ test("Input unknown barcode, select box, create new product, and finish buy-in",
 
 test("Cancel button on /admin/new/:barcode returns to /admin/buy_in", async ({
 	page,
-}) => {
+}, testInfo) => {
+	const { randomBarcode } = testInfo.data;
+
 	await page.getByLabel("Enter barcode").fill(randomBarcode);
 	await page.getByRole("button", { name: /buy in/i }).click();
 	await expect(page).toHaveURL(`/admin/new/${randomBarcode}`);
