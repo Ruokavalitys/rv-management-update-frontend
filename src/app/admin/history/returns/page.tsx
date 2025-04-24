@@ -24,6 +24,7 @@ export default async function ReturnsPage({ searchParams }: { searchParams: { pa
         >
           Previous
         </a>
+        <>page:{page}</>
         <a
           href={`?page=${page + 1}&limit=${limit}`}
           className={`btn ${returns.length < limit ? "btn-disabled" : ""}`}

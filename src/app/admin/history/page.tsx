@@ -27,6 +27,7 @@ export default async function HistoryPage({ searchParams }: { searchParams: { pa
         >
           Previous
         </a>
+        <>page:{page}</>
         <a
           href={`?page=${page + 1}`}
           className={`btn ${combinedData.length < limit ? "btn-disabled" : ""}`}

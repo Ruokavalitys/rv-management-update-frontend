@@ -23,6 +23,7 @@ export default async function DepositsPage({ searchParams }: { searchParams: { p
         >
           Previous
         </a>
+        <>page:{page}</>
         <a
           href={`?page=${page + 1}&limit=${limit}`}
           className={`btn ${deposits.length < limit ? "btn-disabled" : ""}`}

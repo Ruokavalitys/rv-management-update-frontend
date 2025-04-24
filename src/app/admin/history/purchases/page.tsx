@@ -23,6 +23,7 @@ export default async function PurchasesPage({ searchParams }: { searchParams: { 
         >
           Previous
         </a>
+        <>page:{page}</>
         <a
           href={`?page=${page + 1}&limit=${limit}`}
           className={`btn ${returns.length < limit ? "btn-disabled" : ""}`}
