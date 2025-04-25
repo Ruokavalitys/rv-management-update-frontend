@@ -21,7 +21,7 @@ export type Deposit = {
 };
 export type getAllDepositsResponse = {
 	deposits: Deposit[];
-};
+}; 
 
 export async function getAllDeposits() {
 	"use server";
@@ -94,6 +94,50 @@ export async function getCurrentUserPurchases() {
 			},
 		},
 	).then((data) => data.purchases);
+}
+
+export async function getPagedDeposits(page: number, limit: number) {
+	"use server";
+
+	const offset = (page - 1) * limit;
+
+	return await authenticated<getAllDepositsResponse>(
+		`${process.env.RV_BACKEND_URL}/${adminDepositsUrl}`,
+		{
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            next: {
+                tags: [QueryKeys.deposits, offset.toString(), limit.toString()],
+            },
+        },
+		{ limit, offset }
+	).then((data) => {
+		return data.deposits;
+	});
+}
+
+export async function getPagedPurchases(page: number, limit: number) {
+	"use server";
+
+	const offset = (page - 1) * limit;
+
+	return await authenticated<getAllPurchasesResponse>(
+		`${process.env.RV_BACKEND_URL}/${adminPurchasesUrl}`,
+		{
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            next: {
+                tags: [QueryKeys.purchases, offset.toString(), limit.toString()],
+            },
+        },
+		{ limit, offset }
+	).then((data) => {
+		return data.purchases;
+	});
 }
 
 export type Transaction = Partial<Deposit> | Partial<Purchase>;

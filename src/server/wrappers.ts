@@ -25,13 +25,13 @@ export async function authenticated<TResponse>(
 	};
 
 	const response = await fetch(url, {
+		...cleanedConfig,
 		headers: {
 			Authorization: `Bearer ${session.user.accessToken}`,
 			"Content-Type": "application/json",
-			...config.headers,
-		},
-		body: body && JSON.stringify(body),
-		...cleanedConfig,
+			...(config.headers || {}),
+		  },
+		body: body ? JSON.stringify(body) : undefined,
 	});
 	if (!response.ok) {
 		throw new Error(`Request failed: ${response.statusText}`);
