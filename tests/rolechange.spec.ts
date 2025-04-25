@@ -7,13 +7,10 @@ test("should allow admin to change user role and revert it back", async ({
 }) => {
 	await login(page);
 	await page.goto("/admin/users/1");
-
 	const currentRole = await page.locator("p#role").textContent();
-
 	await page.getByText("Change role").click();
 	await page.locator("select#role").selectOption("USER2");
 	await page.getByRole("button", { name: "Update" }).click();
-
 	await expect(
 		page.locator(
 			'span[role="status"][aria-live="assertive"]:has-text("User role updated successfully")',
