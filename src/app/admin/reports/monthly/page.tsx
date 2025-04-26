@@ -37,6 +37,15 @@ export default function Reports() {
 					onChange={(e) => setEndDate(`${e.target.value}-31`)}
 					className="border p-2 rounded"
 				/>
+        <button
+          onClick={() => {
+            setStartDate(undefined);
+            setEndDate(undefined);
+          }}
+          className="border p-2 rounded bg-gray-300 hover:bg-gray-400"
+        >
+          Clear filters
+        </button>
 			</div>
 
 			<div className="h-full font-medium text-gray-700 min-h-0 w-full overflow-y-auto overscroll-none rounded-lg border shadow-lg">

@@ -5,14 +5,16 @@ type Report = {
 	productReturns: number;
 	bankDeposits: number;
 	cashDeposits: number;
-  legacyDeposits: number;
+	legacyDeposits: number;
 	totalUserBalance: number;
 };
 
 export function ReportRow({ report, isTotal }: { report: Report; isTotal?: boolean }) {
 	return (
 		<div
-			className={`flex items-center justify-start border-b border-gray-300 p-4 ${isTotal ? "font-bold bg-gray-200 border-t border-gray-500" : ""}`}
+			className={`flex items-center justify-start border-b border-gray-300 p-4 ${
+				isTotal ? "font-bold bg-gray-200 border-t border-gray-500" : ""
+			}`}
 		>
 			<div className="w-32 pl-6">{report.month}</div>
 			<div className="w-32 pl-6">{report.purchases} €</div>
@@ -20,7 +22,7 @@ export function ReportRow({ report, isTotal }: { report: Report; isTotal?: boole
 			<div className="w-32 pl-6">{report.bottleReturns} €</div>
 			<div className="w-32 pl-6">{report.bankDeposits} €</div>
 			<div className="w-32 pl-6">{report.cashDeposits} €</div>
-      <div className="w-32 pl-6">{report.legacyDeposits} €</div>
+			<div className="w-32 pl-6">{report.legacyDeposits} €</div>
 			<div className="w-32 pl-6 font-bold">{report.totalUserBalance} €</div>
 		</div>
 	);
