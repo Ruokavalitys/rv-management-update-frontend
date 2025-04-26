@@ -73,7 +73,6 @@ const parsePurchaseDate = (time: string | number): Date | null => {
       if (!isNaN(date.getTime())) return date;
     }
   }
-
   return null;
 };
 
@@ -114,28 +113,35 @@ export default function Dashboard({
     if (dateRange === "all") return purchases;
 
     if (dateRange === "custom") {
-      if (!customStartDate || !customEndDate) return purchases;
-
-      const start = new Date(customStartDate);
-      const end = new Date(customEndDate);
+      let result = purchases;
       const today = getDateOnly(new Date());
 
-      if (
-        isNaN(start.getTime()) ||
-        isNaN(end.getTime()) ||
-        getDateOnly(start) > today ||
-        getDateOnly(end) > today ||
-        start > end
-      ) {
-        return purchases;
+      if (customStartDate) {
+        const start = new Date(customStartDate);
+        if (isNaN(start.getTime()) || getDateOnly(start) > today) {
+          return purchases;
+        }
+        result = result.filter((purchase) => {
+          const purchaseDate = parsePurchaseDate(purchase.time);
+          return purchaseDate && purchaseDate >= start;
+        });
       }
-
-      return purchases.filter((purchase) => {
-        const purchaseDate = parsePurchaseDate(purchase.time);
-        return purchaseDate && purchaseDate >= start && purchaseDate <= end;
-      });
+      if (customEndDate) {
+        const end = new Date(customEndDate);
+        if (isNaN(end.getTime()) || getDateOnly(end) > today) {
+          return purchases;
+        }
+        end.setHours(23, 59, 59, 999);
+        if (customStartDate && new Date(customStartDate) > end) {
+          return purchases;
+        }
+        result = result.filter((purchase) => {
+          const purchaseDate = parsePurchaseDate(purchase.time);
+          return purchaseDate && purchaseDate <= end;
+        });
+      }
+      return result;
     }
-
     return purchases.filter((purchase) => {
       const purchaseDate = parsePurchaseDate(purchase.time);
       return purchaseDate && purchaseDate >= cutoffs[dateRange];
@@ -166,7 +172,6 @@ export default function Dashboard({
 
   const averageSaleValue = useMemo(() => {
     if (nonReturnedPurchases.length === 0) return 0;
-
     const total = nonReturnedPurchases.reduce((acc, purchase) => acc + (purchase.price || 0), 0) / 100;
     return total / nonReturnedPurchases.length;
   }, [nonReturnedPurchases]);
@@ -186,7 +191,7 @@ export default function Dashboard({
     return filteredPurchases.reduce((acc, purchase) => {
       const product = purchase.product;
       if (purchase.price <= 0) return acc;
-      acc.set(product.barcode, (acc.get(product.barcode) ?? 1) + 1);
+      acc.set(product.barcode, (acc.get(product.barcode) ?? 0) + 1);
       return acc;
     }, new Map<string, number>());
   }, [filteredPurchases]);
@@ -210,9 +215,9 @@ export default function Dashboard({
 
   return (
     <div className="flex h-full w-full flex-col gap-y-4 py-12">
-      <h1 className="flex items-end gap-4 text-3xl font-semibold">
+      <h1 className="flex items-center gap-4 text-3xl font-semibold">
         Dashboard
-        <div className="flex items-end gap-4">
+        <div className="flex items-center gap-4">
           <DropdownMenu>
             <DropdownMenuTrigger className="flex h-max items-center gap-2 text-xl text-stone-600">
               <ChevronDown />
@@ -266,18 +271,20 @@ export default function Dashboard({
                   >
                     <RotateCcw className="h-4 w-4" />
                   </button>
-                  {customStartDate && customEndDate && (
-                    (getDateOnly(new Date(customStartDate)) > getDateOnly(new Date()) ||
-                      getDateOnly(new Date(customEndDate)) > getDateOnly(new Date())) ? (
-                      <span className="text-red-500 text-sm whitespace-nowrap">
-                        Dates cannot be in the future.
-                      </span>
-                    ) : new Date(customStartDate) > new Date(customEndDate) ? (
-                      <span className="text-red-500 text-sm whitespace-nowrap">
-                        Start date must be before end date.
-                      </span>
-                    ) : null
-                  )}
+                  <div className="min-h-[20px]">
+                    {customStartDate && customEndDate && (
+                      (getDateOnly(new Date(customStartDate)) > getDateOnly(new Date()) ||
+                        getDateOnly(new Date(customEndDate)) > getDateOnly(new Date())) ? (
+                        <span className="text-red-500 text-sm whitespace-nowrap">
+                          Dates cannot be in the future.
+                        </span>
+                      ) : new Date(customStartDate) > new Date(customEndDate) ? (
+                        <span className="text-red-500 text-sm whitespace-nowrap">
+                          Start date must be before end date.
+                        </span>
+                      ) : null
+                    )}
+                  </div>
                 </div>
               </div>
             ) : (
