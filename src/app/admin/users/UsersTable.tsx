@@ -5,7 +5,6 @@ import { useAtomValue } from "jotai";
 import { atomWithReset } from "jotai/utils";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
 
 export const userFiltersAtom = atomWithReset({
 	search: "",
@@ -18,34 +17,21 @@ export const userFiltersAtom = atomWithReset({
 	balanceFilter: "none",
 });
 
+const rolePriority = {
+	[UserRole.ADMIN]: 1,
+	[UserRole.USER1]: 2,
+	[UserRole.USER2]: 3,
+	[UserRole.INACTIVE]: 4,
+};
+
 function UserTable({ users }) {
 	const filters = useAtomValue(userFiltersAtom);
 	const path = usePathname();
-
-	const [sortConfig, setSortConfig] = useState({
-		key: "username",
-		direction: null,
-	});
 
 	const userPathRegex = /\/users\/\d+/g;
 	const className = `${
 		userPathRegex.test(path) ? "hidden xl:flex" : "flex"
 	} h-full w-full overflow-y-auto rounded-lg border shadow-lg`;
-
-	const handleSort = (key) => {
-		setSortConfig((prev) => {
-			if (prev.key !== key) {
-				return { key, direction: "asc" };
-			}
-			if (prev.direction === "asc") {
-				return { key, direction: "desc" };
-			} else if (prev.direction === "desc") {
-				return { key, direction: null };
-			} else {
-				return { key, direction: "asc" };
-			}
-		});
-	};
 
 	const filteredUsers = users
 		.filter((user) => {
@@ -72,62 +58,24 @@ function UserTable({ users }) {
 			return true;
 		});
 
-	const sortedUsers =
-		sortConfig.direction !== null
-			? [...filteredUsers].sort((a, b) => {
-					if (sortConfig.key === "username") {
-						return sortConfig.direction === "asc"
-							? a.username.localeCompare(b.username)
-							: b.username.localeCompare(a.username);
-					} else if (sortConfig.key === "role") {
-						return sortConfig.direction === "asc"
-							? a.role.localeCompare(b.role)
-							: b.role.localeCompare(a.role);
-					} else if (sortConfig.key === "balance") {
-						return sortConfig.direction === "asc"
-							? a.moneyBalance - b.moneyBalance
-							: b.moneyBalance - a.moneyBalance;
-					}
-					return 0;
-				})
-			: filteredUsers;
+	const sortedUsers = [...filteredUsers].sort((a, b) => {
+		const roleDiff = rolePriority[a.role] - rolePriority[b.role];
+		if (roleDiff !== 0) return roleDiff;
+		return a.username.localeCompare(b.username);
+	});
 
 	return (
 		<div className={className}>
 			<div className="w-full">
 				<div className="inline-grid w-full grid-cols-3 border-b border-gray-200 bg-gray-50 px-4 py-3 text-gray-600 font-semibold rounded-t-lg">
-					<div
-						className="whitespace-nowrap cursor-pointer flex items-center gap-x-1 select-none"
-						onClick={() => handleSort("username")}
-					>
+					<div className="whitespace-nowrap flex items-center gap-x-1 select-none">
 						Username
-						{sortConfig.key === "username" && sortConfig.direction !== null && (
-							<span className="text-gray-600 text-sm font-normal">
-								{sortConfig.direction === "asc" ? "↑" : "↓"}
-							</span>
-						)}
 					</div>
-					<div
-						className="place-self-center cursor-pointer flex items-center gap-x-1 select-none"
-						onClick={() => handleSort("role")}
-					>
+					<div className="place-self-center flex items-center gap-x-1 select-none">
 						Role
-						{sortConfig.key === "role" && sortConfig.direction !== null && (
-							<span className="text-gray-600 text-sm font-normal">
-								{sortConfig.direction === "asc" ? "↑" : "↓"}
-							</span>
-						)}
 					</div>
-					<div
-						className="text-right cursor-pointer flex items-center justify-end gap-x-1 select-none"
-						onClick={() => handleSort("balance")}
-					>
+					<div className="text-right flex items-center justify-end gap-x-1 select-none">
 						Balance
-						{sortConfig.key === "balance" && sortConfig.direction !== null && (
-							<span className="text-gray-600 text-sm font-normal">
-								{sortConfig.direction === "asc" ? "↑" : "↓"}
-							</span>
-						)}
 					</div>
 				</div>
 				{sortedUsers.length === 0 && (
