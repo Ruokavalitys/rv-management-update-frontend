@@ -5,4 +5,5 @@ export enum QueryKeys {
   deposits = "deposits",
   purchases = "purchases",
   categories = "categories",
+  transactions = "transactions"
 }

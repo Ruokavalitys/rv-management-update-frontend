@@ -8,6 +8,7 @@ import { QueryKeys } from "./queryKeys";
 
 const adminDepositsUrl = "api/v1/admin/depositHistory";
 const adminPurchasesUrl = "api/v1/admin/purchaseHistory";
+const adminPagedTransactionUrl = "api/v1/admin/pagedTransactionHistory";
 const userDepositsUrl = "api/v1/user/depositHistory";
 const userPurchasesUrl = "api/v1/user/purchaseHistory";
 
@@ -141,3 +142,30 @@ export async function getPagedPurchases(page: number, limit: number) {
 }
 
 export type Transaction = Partial<Deposit> | Partial<Purchase>;
+
+type GetTransactionsResponse = {
+	transactions: Transaction[];
+} 
+
+export async function getPagedTransactions(page: number, limit: number) {
+	"use server";
+
+	const offset = (page - 1) * limit;
+ 
+	return await authenticated<GetTransactionsResponse>(
+		`${process.env.RV_BACKEND_URL}/${adminPagedTransactionUrl}`,
+		{
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+			},
+			next: {
+				tags: [QueryKeys.transactions, offset.toString(), limit.toString()],
+			},
+		},
+		{ limit, offset }
+	).then((data) => {
+		return data.transactions;
+	});
+}
+ 

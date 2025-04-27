@@ -1,8 +1,7 @@
 import { TableAndFilter } from "@/components/HistoryTable/TableAndFilter";
 import { HeaderTab } from "@/components/ui/header-tab";
 import {
-  getPagedDeposits,
-  getPagedPurchases,
+  getPagedTransactions,
 } from "@/server/requests/historyRequests";
 import { historyTabs } from "./layout";
 
@@ -10,9 +9,7 @@ export default async function HistoryPage({ searchParams }: { searchParams: { pa
   const page = parseInt(searchParams.page || "1", 10);
   const limit = parseInt(searchParams.limit || "10", 10);
 
-  const deposits = await getPagedDeposits(page, limit);
-  const purchases = await getPagedPurchases(page, limit);
-  const combinedData = [...purchases, ...deposits].sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime());
+  const combinedData = await getPagedTransactions(page, limit);
 
   return (
     <>
