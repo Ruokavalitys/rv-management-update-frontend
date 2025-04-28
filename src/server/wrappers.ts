@@ -12,6 +12,8 @@ export async function authenticated<TResponse>(
 		throw new Error("Not authenticated");
 	}
 
+	const method = config.method?.toUpperCase() || "GET";
+
 	const cleanedConfig: RequestInit = {
 		...config,
 		next: config.next
@@ -24,15 +26,21 @@ export async function authenticated<TResponse>(
 			: undefined,
 	};
 
-	const response = await fetch(url, {
+	const responseOptions: RequestInit = {
 		...cleanedConfig,
 		headers: {
 			Authorization: `Bearer ${session.user.accessToken}`,
 			"Content-Type": "application/json",
 			...(config.headers || {}),
-		  },
-		body: body ? JSON.stringify(body) : undefined,
-	});
+		},
+	};
+
+	if (method !== "GET" && method !== "HEAD" && body) {
+		responseOptions.body = JSON.stringify(body);
+	}
+
+	const response = await fetch(url, responseOptions);
+
 	if (!response.ok) {
 		throw new Error(`Request failed: ${response.statusText}`);
 	}
