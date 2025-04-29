@@ -96,12 +96,17 @@ export async function getCurrentUserPurchases() {
 	).then((data) => data.purchases);
 }
 
+export type getPagedDepositsResponse = {
+	deposits: Deposit[];
+	count: number;
+}; 
+
 export async function getPagedDeposits(page: number, limit: number) {
 	"use server";
 
 	const offset = (page - 1) * limit;
 
-	return await authenticated<getAllDepositsResponse>(
+	return await authenticated<getPagedDepositsResponse>(
 		`${process.env.RV_BACKEND_URL}/${adminDepositsUrl}`,
 		{
             method: "POST",
@@ -114,16 +119,21 @@ export async function getPagedDeposits(page: number, limit: number) {
         },
 		{ limit, offset }
 	).then((data) => {
-		return data.deposits;
+		return data;
 	});
 }
+
+export type getPagedPurchasesResponse = {
+	purchases: Purchase[];
+	count: number;
+};
 
 export async function getPagedPurchases(page: number, limit: number) {
 	"use server";
 
 	const offset = (page - 1) * limit;
 
-	return await authenticated<getAllPurchasesResponse>(
+	return await authenticated<getPagedPurchasesResponse>(
 		`${process.env.RV_BACKEND_URL}/${adminPurchasesUrl}`,
 		{
             method: "POST",
@@ -136,7 +146,7 @@ export async function getPagedPurchases(page: number, limit: number) {
         },
 		{ limit, offset }
 	).then((data) => {
-		return data.purchases;
+		return data;
 	});
 }
 
