@@ -33,7 +33,7 @@ export const ProductView = ({ product, initialBoxes = [] }: OwnProps) => {
 				toast({
 					title: "Error",
 					description: "Failed to fetch boxes",
-					variant: "destructive",
+					variant: "default",
 					duration: 3000,
 				});
 				setBoxes([]);
@@ -60,7 +60,7 @@ export const ProductView = ({ product, initialBoxes = [] }: OwnProps) => {
 			toast({
 				title: "Box updated",
 				description: `Quantity for box ${boxBarcode} updated to ${newItemsPerBox}`,
-				duration: 2000,
+				duration: 3000,
 			});
 		} catch (error) {
 			toast({
