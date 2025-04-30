@@ -60,7 +60,7 @@ export default function BuyInProductForm({ product, defaultMargin }: OwnProps) {
 			toast({
 				title: "Buy In Successful",
 				description: `Bought in ${count} pcs of ${product.name}`,
-				duration: 6000,
+				duration: 3000,
 			});
 			router.push(`/admin/buy_in`);
 		}

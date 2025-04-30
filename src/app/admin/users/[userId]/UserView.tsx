@@ -92,22 +92,22 @@ export const UserView = ({
 
 	const handlePasswordChange = async () => {
 		if (password !== confirmPassword) {
-			toast({ title: "Passwords do not match", duration: 2000 });
+			toast({ title: "Passwords do not match", duration: 3000 });
 			return;
 		}
 		if (!password.trim()) {
-			toast({ title: "Password cannot be empty", duration: 2000 });
+			toast({ title: "Password cannot be empty", duration: 3000 });
 			return;
 		}
 		try {
 			await changePassword(user.userId, password);
-			toast({ title: "User's password changed successfully", duration: 2000 });
+			toast({ title: "User's password changed successfully", duration: 3000 });
 			setPassword("");
 			setConfirmPassword("");
 			setIsPasswordModalOpen(false);
 		} catch (error) {
 			console.error("Error changing user password:", error);
-			toast({ title: "Failed to update user password", duration: 2000 });
+			toast({ title: "Failed to update user password", duration: 3000 });
 		}
 	};
 
@@ -127,7 +127,7 @@ export const UserView = ({
 		try {
 			await changeUserRole(user.userId, newRole as UserRole);
 			setRole(newRole as UserRole);
-			toast({ title: "User role updated successfully", duration: 2000 });
+			toast({ title: "User role updated successfully", duration: 3000 });
 
 			if (isCurrentUser) {
 				await signOut({ redirectTo: "/" });
@@ -138,7 +138,7 @@ export const UserView = ({
 			}
 		} catch (error) {
 			console.error("Error changing user role:", error);
-			toast({ title: "Failed to update user role", duration: 2000 });
+			toast({ title: "Failed to update user role", duration: 3000 });
 			setIsRoleConfirmOpen(false);
 		}
 	};

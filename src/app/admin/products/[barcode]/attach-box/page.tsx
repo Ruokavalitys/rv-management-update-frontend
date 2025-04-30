@@ -1,3 +1,4 @@
+// page.tsx
 "use client";
 
 import { Button } from "@/components/ui/button";
@@ -26,13 +27,27 @@ export default function AttachBoxPage({
 		setBoxBarcode(ean13Barcode);
 	};
 
+	const handleItemsPerBoxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		const value = e.target.value;
+		if (value === "" || (Number(value) >= 1 && Number(value) <= 9999)) {
+			setItemsPerBox(value);
+		}
+	};
+
 	const initialState = { success: false, error: null as string | null };
 	const [state, createBoxAction] = useFormState(
 		async (_: any, formData: FormData) => {
 			try {
+				const itemsPerBoxValue = Number(formData.get("itemsPerBox"));
+				if (itemsPerBoxValue > 9999) {
+					return {
+						success: false,
+						error: "Items per box cannot exceed 9999.",
+					};
+				}
 				const box = {
 					boxBarcode: formData.get("boxBarcode") as string,
-					itemsPerBox: Number(formData.get("itemsPerBox")),
+					itemsPerBox: itemsPerBoxValue,
 					productBarcode: formData.get("productBarcode") as string,
 				};
 				await createBox(box);
@@ -123,10 +138,12 @@ export default function AttachBoxPage({
 								name="itemsPerBox"
 								type="number"
 								value={itemsPerBox}
-								onChange={(e) => setItemsPerBox(e.target.value)}
+								onChange={handleItemsPerBoxChange}
 								min={1}
+								max={9999}
 								required
 								className="w-full max-w-full appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+								title="Items per box must be between 1 and 9999."
 							/>
 						</div>
 						{state.error && (

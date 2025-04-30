@@ -67,10 +67,10 @@ export const ProductEditForm = ({
 
 	useEffect(() => {
 		if (state.success) {
-			toast({ title: "Product updated", duration: 5000 });
+			toast({ title: "Product updated", duration: 3000 });
 			router.push(`/admin/products/${product.barcode}`);
 		} else if (state.error) {
-			toast({ title: "Error updating product", duration: 5000 });
+			toast({ title: "Error updating product", duration: 3000 });
 		}
 	}, [state]);
 

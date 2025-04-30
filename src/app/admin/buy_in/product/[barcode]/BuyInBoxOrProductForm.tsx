@@ -204,7 +204,7 @@ export default function BuyInFormClient({
 			toast({
 				title: "Buy-In Successful",
 				description: `Added ${totalItemsAdded} items of ${box.productName} (${box.productBarcode}) (${boxCountNum} box(es) with barcode ${box.boxBarcode})`,
-				duration: 6000,
+				duration: 3000,
 			});
 			router.push(`/admin/buy_in`);
 			router.refresh();
@@ -253,7 +253,7 @@ export default function BuyInFormClient({
 				toast({
 					title: "Buy-In Successful",
 					description: `Added ${productQuantity} items of product ${product.name}`,
-					duration: 6000,
+					duration: 3000,
 				});
 				router.push(`/admin/buy_in`);
 				router.refresh();
