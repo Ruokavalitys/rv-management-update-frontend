@@ -31,7 +31,7 @@ export async function addProductAction(
 	const validatedData = z
 		.object({
 			barcode: z.string().min(1).max(14),
-			name: z.string().min(1),
+			name: z.string().min(1).max(255),
 			categoryId: z.union(await getCategoryIdLiterals()),
 			buyPrice: z.number().int(),
 			sellPrice: z.number().int(),
@@ -55,7 +55,7 @@ export async function addProductAction(
 	} catch (error) {
 		return {
 			success: false,
-			error: "Failed to add product",
+			error: { general: "Failed to add product" },
 		};
 	}
 }

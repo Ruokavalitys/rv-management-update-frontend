@@ -48,17 +48,17 @@ export default function BuyInBarcodeForm({ products, boxes }: OwnProps) {
 
 	return (
 		<form
-			className="flex flex-col w-full max-w-3xl space-y-4 mx-auto"
+			className="flex flex-col w-72 space-y-4 mx-auto"
 			onSubmit={onSubmit}
 			autoComplete="off"
 		>
 			<label
 				htmlFor="barcode"
-				className="text-sm font-medium text-stone-700 tracking-wide translate-x-[-5%]"
+				className="text-sm font-medium text-stone-700 tracking-wide"
 			>
 				Enter barcode
 			</label>
-			<div className="relative">
+			<div className="relative w-full">
 				<Input
 					id="barcode"
 					name="barcode"
@@ -69,8 +69,7 @@ export default function BuyInBarcodeForm({ products, boxes }: OwnProps) {
 					type="text"
 					maxLength={14}
 					onBeforeInput={allowOnlyDigits}
-					className="text-base"
-					containerClassName="w-[110%] flex justify-center translate-x-[-5%]"
+					containerClassName="w-full flex justify-center"
 					onFocus={() => setIsFocused(true)}
 					onBlur={() => setIsFocused(false)}
 				/>
@@ -81,8 +80,8 @@ export default function BuyInBarcodeForm({ products, boxes }: OwnProps) {
 					<p className="text-xs text-red-500 mt-2 text-center">{error}</p>
 				)}
 			</div>
-			<div className="flex justify-center">
-				<Button type="submit" className="w-fit">
+			<div className="flex justify-center w-full">
+				<Button type="submit" className="w-[50%]">
 					Buy In
 				</Button>
 			</div>

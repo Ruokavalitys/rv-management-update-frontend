@@ -37,7 +37,7 @@ export default function BoxPromptPage({
 		toast({
 			title: "No Box Attached",
 			description: `Proceeding to buy-in for ${productName}.`,
-			duration: 4000,
+			duration: 3000,
 		});
 		router.push(`/admin/buy_in/product/${params.barcode}`);
 	};

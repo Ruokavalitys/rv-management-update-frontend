@@ -21,13 +21,16 @@ import { useFormState } from "react-dom";
 function AddProductFields({ categories }: { categories: Category[] }) {
 	const searchParams = useSearchParams();
 	const [barcode, setBarcode] = useState(searchParams.get("barcode") ?? "");
-
+	const [showError, setShowError] = useState<string | null>(null);
 	const initialState = { success: false };
 	const [state, addProduct] = useFormState<
-		{ success: boolean; newProduct?: Product; error?: unknown },
+		{
+			success: boolean;
+			newProduct?: Product;
+			error?: { name?: string[]; general?: string };
+		},
 		FormData
 	>(addProductAction, initialState);
-
 	const router = useRouter();
 	const { toast } = useToast();
 
@@ -36,7 +39,6 @@ function AddProductFields({ categories }: { categories: Category[] }) {
 			const { newProduct: product } = state;
 			const boxBarcode = searchParams.get("boxBarcode");
 			const itemsPerBox = searchParams.get("itemsPerBox");
-
 			const handleRedirect = async () => {
 				try {
 					if (boxBarcode) {
@@ -49,7 +51,7 @@ function AddProductFields({ categories }: { categories: Category[] }) {
 							toast({
 								title: "Box Created",
 								description: `Box with barcode ${boxBarcode} created successfully.`,
-								duration: 4000,
+								duration: 3000,
 							});
 							router.push(
 								`/admin/buy_in/product/${product.barcode}?type=box&boxBarcode=${boxBarcode}`,
@@ -69,19 +71,37 @@ function AddProductFields({ categories }: { categories: Category[] }) {
 						title: "Error",
 						description: "Failed to create box.",
 						variant: "destructive",
-						duration: 4000,
+						duration: 3000,
 					});
 				}
 			};
-
 			toast({
 				title: "Product Created",
 				description: `Product ${product.name} has been created`,
-				duration: 4000,
+				duration: 3000,
 			});
 			handleRedirect();
 		}
 	}, [state.success, state.newProduct, router, searchParams, toast]);
+
+	useEffect(() => {
+		if (state.error?.name) {
+			setShowError("Please enter a valid product name (1-60 characters)");
+			const timer = setTimeout(() => setShowError(null), 3000);
+			return () => clearTimeout(timer);
+		} else if (state.error?.general) {
+			setShowError("An error occurred. Please try again.");
+			const timer = setTimeout(() => setShowError(null), 3000);
+			return () => clearTimeout(timer);
+		}
+	}, [state.error]);
+
+	const allowOnlyDigits = (e: React.FormEvent<HTMLInputElement>) => {
+		const input = e.nativeEvent as InputEvent;
+		if (input.data && /\D/.test(input.data)) {
+			e.preventDefault();
+		}
+	};
 
 	const generateBarcode = () => {
 		const ean13Barcode = generateEAN13Barcode();
@@ -91,7 +111,7 @@ function AddProductFields({ categories }: { categories: Category[] }) {
 	return (
 		<>
 			<div
-				className="flex h-5/6 w-fit flex-shrink flex-col flex-wrap items-center gap-4"
+				className="flex h-5/6 w-96 flex-shrink flex-col flex-wrap items-center gap-4"
 				onKeyDown={nextFieldOnEnter}
 			>
 				<div className={`${searchParams.has("barcode") && "hidden"} w-full`}>
@@ -103,11 +123,15 @@ function AddProductFields({ categories }: { categories: Category[] }) {
 							id="barcode"
 							name="barcode"
 							placeholder="Barcode"
-							onChange={({ target }) => setBarcode(target.value)}
+							value={barcode}
+							onChange={(e) => setBarcode(e.target.value)}
 							data-next="name"
-							defaultValue={barcode}
 							autoFocus={!searchParams.has("barcode")}
 							containerClassName="mb-2"
+							inputMode="numeric"
+							pattern="[0-9]*"
+							maxLength={14}
+							onBeforeInput={allowOnlyDigits}
 						/>
 						<Button
 							type="button"
@@ -115,15 +139,16 @@ function AddProductFields({ categories }: { categories: Category[] }) {
 							onClick={generateBarcode}
 							className="h-8 w-8 p-1 border border-stone-300 hover:bg-stone-100"
 							style={{ marginTop: "-8px" }}
+							title="Creates a random EAN-13 code"
 						>
 							<Dice5 className="h-6 w-6 text-stone-600" />
 						</Button>
 					</div>
 				</div>
-				<Barcode barcode={barcode} width={3} height={50} displayInvalid />
+				<Barcode barcode={barcode} displayInvalid />
 				<div className="w-full">
 					<label htmlFor="name" className="text-sm text-stone-500">
-						Name
+						Name (1-60 characters)
 					</label>
 					<Input
 						id="name"
@@ -131,7 +156,11 @@ function AddProductFields({ categories }: { categories: Category[] }) {
 						placeholder="Name"
 						data-next="categoryId"
 						autoFocus={searchParams.has("barcode")}
+						maxLength={60}
 					/>
+					{showError && (
+						<p className="text-sm text-red-500 mt-1">{showError}</p>
+					)}
 				</div>
 				<div className="w-full">
 					<label htmlFor="category" className="text-sm text-stone-500">
