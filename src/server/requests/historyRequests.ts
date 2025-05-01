@@ -10,6 +10,7 @@ const adminDepositsUrl = "api/v1/admin/depositHistory";
 const adminPurchasesUrl = "api/v1/admin/purchaseHistory";
 const userDepositsUrl = "api/v1/user/depositHistory";
 const userPurchasesUrl = "api/v1/user/purchaseHistory";
+const overViewUrl = "api/v1/admin/combinedHistory";
 
 export type Deposit = {
 	depositId: number;
@@ -135,6 +136,28 @@ export async function getPagedPurchases(page: number, limit: number) {
 
 	return await authenticated<getPagedPurchasesResponse>(
 		`${process.env.RV_BACKEND_URL}/${adminPurchasesUrl}`,
+		{
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            next: {
+                tags: [QueryKeys.purchases, offset.toString(), limit.toString()],
+            },
+        },
+		{ limit, offset }
+	).then((data) => {
+		return data;
+	});
+}
+
+export async function getPagedCombined(page: number, limit: number) {
+	"use server";
+
+	const offset = (page - 1) * limit;
+
+	return await authenticated<getPagedPurchasesResponse>(
+		`${process.env.RV_BACKEND_URL}/${overViewUrl}`,
 		{
             method: "POST",
             headers: {
