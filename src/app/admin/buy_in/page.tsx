@@ -1,5 +1,6 @@
 import { getAllBoxes } from "@/server/requests/boxRequests";
 import { getAllProducts } from "@/server/requests/productRequests";
+import { ScanBarcode } from 'lucide-react';
 import BuyInBarcodeForm from "./BarcodeForm";
 
 export default async function BuyInLandingPage() {
@@ -9,7 +10,9 @@ export default async function BuyInLandingPage() {
   return (
     <div className="flex h-full w-full items-center justify-center">
       <div className="flex w-fit flex-col items-start gap-y-4">
-        <h1 className="text-3xl font-semibold">Buy In</h1>
+        <h1 className="text-3xl font-semibold">Buy In
+          <ScanBarcode className="ml-2 inline h-10 w-10" />
+        </h1>
         <div className="flex flex-col items-center rounded-lg border border-stone-300 bg-white p-8 shadow-lg">
           <BuyInBarcodeForm products={products} boxes={boxes} />
         </div>

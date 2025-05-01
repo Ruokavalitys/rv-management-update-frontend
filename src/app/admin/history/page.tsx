@@ -1,10 +1,10 @@
 import { TableAndFilter } from "@/components/HistoryTable/TableAndFilter";
 import { HeaderTab } from "@/components/ui/header-tab";
 import {
-  getPagedDeposits,
-  getPagedPurchases,
   getAllDeposits,
-  getAllPurchases
+  getAllPurchases,
+  getPagedDeposits,
+  getPagedPurchases
 } from "@/server/requests/historyRequests";
 import { historyTabs } from "./layout";
 
@@ -33,7 +33,6 @@ export default async function HistoryPage({ searchParams }: { searchParams: { pa
 
   return (
     <>
-      <>{purchasecount}, count {depocount}</>
       <HeaderTab tabs={historyTabs} selectedTab="Overview" />
       <div className="flex h-full min-h-0 w-full flex-row justify-between gap-x-8">
         <TableAndFilter initialData={paginatedData} />
