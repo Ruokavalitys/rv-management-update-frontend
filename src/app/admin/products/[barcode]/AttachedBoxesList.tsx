@@ -24,24 +24,69 @@ const AttachedBoxesList = ({ boxes = [], barcode, onUpdateBox }: OwnProps) => {
 		boxBarcode: string;
 		itemsPerBox: number;
 	} | null>(null);
+	const [displayValue, setDisplayValue] = useState<string>("");
 
 	const handleEdit = (box: Box) => {
 		setEditBox({ boxBarcode: box.boxBarcode, itemsPerBox: box.itemsPerBox });
+		setDisplayValue(box.itemsPerBox.toString());
 	};
 
 	const handleSave = (boxBarcode: string) => {
-		if (!editBox || editBox.itemsPerBox <= 0) {
+		if (!editBox) return;
+
+		const parsedValue = displayValue === "" ? 0 : Number(displayValue);
+		if (parsedValue <= 0 || displayValue === "") {
 			toast({
 				title: "Invalid quantity",
 				description: "Quantity must be greater than 0",
-				variant: "destructive",
-				duration: 2000,
+				variant: "default",
+				duration: 3000,
 				style: { backgroundColor: "#f8fafc", color: "#333" },
 			});
 			return;
 		}
-		onUpdateBox(boxBarcode, editBox.itemsPerBox);
+		if (parsedValue > 9999) {
+			toast({
+				title: "Invalid quantity",
+				description: "Quantity must not exceed 9999",
+				variant: "default",
+				duration: 3000,
+				style: { backgroundColor: "#f8fafc", color: "#333" },
+			});
+			return;
+		}
+		onUpdateBox(boxBarcode, parsedValue);
 		setEditBox(null);
+		setDisplayValue("");
+	};
+
+	const handleItemsPerBoxChange = (value: string) => {
+		setDisplayValue(value);
+
+		if (value === "") return;
+
+		const parsedValue = Number(value);
+		if (!isNaN(parsedValue)) {
+			if (parsedValue > 9999) {
+				toast({
+					title: "Invalid quantity",
+					description: "Quantity must not exceed 9999",
+					variant: "default",
+					duration: 3000,
+					style: { backgroundColor: "#f8fafc", color: "#333" },
+				});
+				setEditBox({
+					...editBox!,
+					itemsPerBox: 9999,
+				});
+				setDisplayValue("9999");
+			} else {
+				setEditBox({
+					...editBox!,
+					itemsPerBox: parsedValue,
+				});
+			}
+		}
 	};
 
 	return (
@@ -64,14 +109,10 @@ const AttachedBoxesList = ({ boxes = [], barcode, onUpdateBox }: OwnProps) => {
 									<div className="flex items-center gap-x-2 w-fit">
 										<Input
 											type="number"
-											value={editBox.itemsPerBox}
-											onChange={(e) =>
-												setEditBox({
-													...editBox,
-													itemsPerBox: Number(e.target.value),
-												})
-											}
+											value={displayValue}
+											onChange={(e) => handleItemsPerBoxChange(e.target.value)}
 											min="1"
+											max="9999"
 											className="w-16"
 										/>
 										<span className="text-[15px] text-stone-500">pcs</span>
@@ -80,7 +121,9 @@ const AttachedBoxesList = ({ boxes = [], barcode, onUpdateBox }: OwnProps) => {
 										<Button
 											size="sm"
 											onClick={() => handleSave(box.boxBarcode)}
-											disabled={editBox.itemsPerBox <= 0}
+											disabled={
+												displayValue === "" || Number(displayValue) <= 0
+											}
 											className="px-3 py-1 text-xs"
 										>
 											Save
@@ -88,7 +131,10 @@ const AttachedBoxesList = ({ boxes = [], barcode, onUpdateBox }: OwnProps) => {
 										<Button
 											size="sm"
 											variant="outline"
-											onClick={() => setEditBox(null)}
+											onClick={() => {
+												setEditBox(null);
+												setDisplayValue("");
+											}}
 											className="px-3 py-1 text-xs"
 										>
 											Cancel
@@ -116,7 +162,7 @@ const AttachedBoxesList = ({ boxes = [], barcode, onUpdateBox }: OwnProps) => {
 												navigator.clipboard.writeText(box.boxBarcode);
 												toast({
 													title: "Box barcode copied to clipboard",
-													duration: 2000,
+													duration: 3000,
 												});
 											}}
 										>

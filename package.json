@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "next lint",
     "test": "playwright test",
+    "test:safe": "playwright test --workers=1",
     "test:ui": "playwright test --ui",
     "test:report": "playwright test && playwright show-report",
     "postinstall": "cp .env.example .env.local"

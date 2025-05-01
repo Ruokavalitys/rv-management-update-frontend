@@ -1,22 +1,37 @@
 import { TableAndFilter } from "@/components/HistoryTable/TableAndFilter";
 import { HeaderTab } from "@/components/ui/header-tab";
-import { getAllPurchases } from "@/server/requests/historyRequests";
+import { getPagedPurchases } from "@/server/requests/historyRequests";
 import { historyTabs } from "../layout";
 
-export async function getAllReturns() {
-const purchases = await getAllPurchases();
-return purchases.filter(purchase => purchase.returned);
-}
 
-export default async function ReturnsPage() {
-const returns = await getAllReturns();
+export default async function ReturnsPage({ searchParams }: { searchParams: { page?: string; limit?: string } }) {
+  const page = parseInt(searchParams.page || "1", 10);
+  const limit = parseInt(searchParams.limit || "10", 10);
 
-return (
-  <>
-    <HeaderTab tabs={historyTabs} selectedTab="Returns" />
-    <div className="flex h-full min-h-0 w-full flex-row justify-between gap-x-8">
-      <TableAndFilter initialData={returns} />
-    </div>
-  </>
-);
+  const all = await getPagedPurchases(page, limit);
+  const returns = all.filter(all => all.returned)
+
+  return (
+    <>
+      <HeaderTab tabs={historyTabs} selectedTab="Returns" />
+      <div className="flex h-full min-h-0 w-full flex-row justify-between gap-x-8">
+        <TableAndFilter initialData={returns} />
+      </div>
+      <div className="flex justify-between mt-4">
+        <a
+          href={`?page=${page > 1 ? page - 1 : 1}&limit=${limit}`}
+          className={`btn ${page === 1 ? "btn-disabled" : ""}`}
+        >
+          Previous
+        </a>
+        <>page:{page}</>
+        <a
+          href={`?page=${page + 1}&limit=${limit}`}
+          className={`btn ${returns.length < limit ? "btn-disabled" : ""}`}
+        >
+          Next
+        </a>
+      </div>
+    </>
+  );
 }

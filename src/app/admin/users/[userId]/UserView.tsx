@@ -1,5 +1,8 @@
 "use client";
 
+import { DepositRow } from "@/components/UserHistoryTable/UserDepositRow";
+import { PurchaseRow } from "@/components/UserHistoryTable/UserPurchaseRow";
+import { ReturnedRow } from "@/components/UserHistoryTable/UserReturnedRow";
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -25,9 +28,6 @@ import { Copy, Eye, EyeOff, Lock } from "lucide-react";
 import { signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
-import { PurchaseRow } from "@/components/UserHistoryTable/UserPurchaseRow";
-import { DepositRow } from "@/components/UserHistoryTable/UserDepositRow";
-import { ReturnedRow } from "@/components/UserHistoryTable/UserReturnedRow";
 
 export const UserView = ({
 	user,
@@ -47,9 +47,9 @@ export const UserView = ({
 	const [confirmPassword, setConfirmPassword] = useState("");
 	const [role, setRole] = useState(user.role);
 	const [newRole, setNewRole] = useState<UserRole | "">("");
-	const [view, setView] = useState<"overview" | "deposits" | "purchases" | "returns">(
-		"overview",
-	);
+	const [view, setView] = useState<
+		"overview" | "deposits" | "purchases" | "returns"
+	>("overview");
 	const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
 	const [isRoleModalOpen, setIsRoleModalOpen] = useState(false);
 	const [isPasswordVisible, setIsPasswordVisible] = useState(false);
@@ -65,22 +65,13 @@ export const UserView = ({
 			const usernameMatch =
 				loggedInAsElement.textContent?.match(/Logged in as\s+(.+)/);
 			const username = usernameMatch ? usernameMatch[1].trim() : null;
-			console.log("Detected username from UI:", username);
 			setCurrentUsername(username);
 		} else {
-			console.log(
-				"No 'Logged in as' element found, using fallback: admin_user",
-			);
 			setCurrentUsername("admin_user");
 		}
 	}, []);
 
 	const isCurrentUser = currentUsername === user.username;
-	console.log("isCurrentUser:", isCurrentUser, {
-		currentUsername,
-		userUsername: user.username,
-	});
-
 	const transactions = useMemo(() => {
 		if (view === "overview") {
 			return [...depositHistory, ...purchaseHistory, ...returnHistory].toSorted(
@@ -101,22 +92,22 @@ export const UserView = ({
 
 	const handlePasswordChange = async () => {
 		if (password !== confirmPassword) {
-			toast({ title: "Passwords do not match", duration: 2000 });
+			toast({ title: "Passwords do not match", duration: 3000 });
 			return;
 		}
 		if (!password.trim()) {
-			toast({ title: "Password cannot be empty", duration: 2000 });
+			toast({ title: "Password cannot be empty", duration: 3000 });
 			return;
 		}
 		try {
 			await changePassword(user.userId, password);
-			toast({ title: "User's password changed successfully", duration: 2000 });
+			toast({ title: "User's password changed successfully", duration: 3000 });
 			setPassword("");
 			setConfirmPassword("");
 			setIsPasswordModalOpen(false);
 		} catch (error) {
 			console.error("Error changing user password:", error);
-			toast({ title: "Failed to update user password", duration: 2000 });
+			toast({ title: "Failed to update user password", duration: 3000 });
 		}
 	};
 
@@ -125,7 +116,6 @@ export const UserView = ({
 			setIsRoleModalOpen(false);
 			return;
 		}
-		console.log("handleRoleChange called", { newRole, role, isCurrentUser });
 		if (isCurrentUser) {
 			setIsRoleConfirmOpen(true);
 		} else {
@@ -134,18 +124,12 @@ export const UserView = ({
 	};
 
 	const performRoleChange = async () => {
-		console.log("performRoleChange called", {
-			userId: user.userId,
-			newRole,
-			isCurrentUser,
-		});
 		try {
 			await changeUserRole(user.userId, newRole as UserRole);
 			setRole(newRole as UserRole);
-			toast({ title: "User role updated successfully", duration: 2000 });
+			toast({ title: "User role updated successfully", duration: 3000 });
 
 			if (isCurrentUser) {
-				console.log("Current user changed their own role, logging out...");
 				await signOut({ redirectTo: "/" });
 			} else {
 				setIsRoleModalOpen(false);
@@ -154,7 +138,7 @@ export const UserView = ({
 			}
 		} catch (error) {
 			console.error("Error changing user role:", error);
-			toast({ title: "Failed to update user role", duration: 2000 });
+			toast({ title: "Failed to update user role", duration: 3000 });
 			setIsRoleConfirmOpen(false);
 		}
 	};
@@ -296,9 +280,7 @@ export const UserView = ({
 							Returns
 						</h2>
 					</div>
-					<div
-						className="hidden h-full w-full overflow-y-auto rounded-lg border shadow-lg xl:flex xl:flex-col"
-					>
+					<div className="hidden h-full w-full overflow-y-auto rounded-lg border shadow-lg xl:flex xl:flex-col">
 						<div className="w-full">
 							<div className="flex w-full px-4 py-4 border-b border-gray-200 bg-gray-50">
 								<div className="flex-1 flex items-left text-left font-semibold text-gray-600 whitespace-nowrap">
@@ -315,28 +297,39 @@ export const UserView = ({
 								</div>
 							</div>
 							{transactions.length === 0 ? (
-							<p className="col-span-4 text-center text-stone-500 py-4">
-								No transactions yet
-							</p>
+								<p className="col-span-4 text-center text-stone-500 py-4">
+									No transactions yet
+								</p>
 							) : (
-							transactions.map((transaction, index) => (
-								<div key={index}>
-								{isPurchase(transaction) && !transaction.isReturnAction && (
-									<PurchaseRow key={`purchase-${transaction.purchaseId}`} purchase={transaction} isAdmin={true}/>
-								)}
-								{isPurchase(transaction) && transaction.isReturnAction && (
-									<ReturnedRow key={`return-${transaction.purchaseId}`} purchase={transaction} isAdmin={true} />
-								)}
-								{isDeposit(transaction) && (
-										<DepositRow key={`deposit-${transaction.depositId}`} deposit={transaction} />
-								)}
-								</div>
-							))
-						)}
+								transactions.map((transaction, index) => (
+									<div key={index}>
+										{isPurchase(transaction) && !transaction.isReturnAction && (
+											<PurchaseRow
+												key={`purchase-${transaction.purchaseId}`}
+												purchase={transaction}
+												isAdmin={true}
+											/>
+										)}
+										{isPurchase(transaction) && transaction.isReturnAction && (
+											<ReturnedRow
+												key={`return-${transaction.purchaseId}`}
+												purchase={transaction}
+												isAdmin={true}
+											/>
+										)}
+										{isDeposit(transaction) && (
+											<DepositRow
+												key={`deposit-${transaction.depositId}`}
+												deposit={transaction}
+											/>
+										)}
+									</div>
+								))
+							)}
+						</div>
 					</div>
 				</div>
 			</div>
-		</div>
 
 			{isPasswordModalOpen && (
 				<div className="fixed inset-0 flex items-center justify-center bg-gray-500 bg-opacity-50">

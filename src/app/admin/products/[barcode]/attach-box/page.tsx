@@ -1,3 +1,4 @@
+// page.tsx
 "use client";
 
 import { Button } from "@/components/ui/button";
@@ -26,13 +27,27 @@ export default function AttachBoxPage({
 		setBoxBarcode(ean13Barcode);
 	};
 
+	const handleItemsPerBoxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		const value = e.target.value;
+		if (value === "" || (Number(value) >= 1 && Number(value) <= 9999)) {
+			setItemsPerBox(value);
+		}
+	};
+
 	const initialState = { success: false, error: null as string | null };
 	const [state, createBoxAction] = useFormState(
 		async (_: any, formData: FormData) => {
 			try {
+				const itemsPerBoxValue = Number(formData.get("itemsPerBox"));
+				if (itemsPerBoxValue > 9999) {
+					return {
+						success: false,
+						error: "Items per box cannot exceed 9999.",
+					};
+				}
 				const box = {
 					boxBarcode: formData.get("boxBarcode") as string,
-					itemsPerBox: Number(formData.get("itemsPerBox")),
+					itemsPerBox: itemsPerBoxValue,
 					productBarcode: formData.get("productBarcode") as string,
 				};
 				await createBox(box);
@@ -58,7 +73,7 @@ export default function AttachBoxPage({
 			toast({
 				title: "Box attached",
 				description: `Successfully attached box with barcode ${boxBarcode}`,
-				duration: 6000,
+				duration: 3000,
 			});
 			router.push(`/admin/products/${productBarcode}`);
 			router.refresh();
@@ -67,12 +82,12 @@ export default function AttachBoxPage({
 
 	return (
 		<div className="flex h-full w-full items-center justify-center">
-			<div className="flex w-fit flex-col items-start gap-y-4">
-				<h1 className="text-3xl font-semibold">Attach new box</h1>
-				<div className="flex flex-col items-center rounded-lg border border-stone-300 bg-white p-8 shadow-lg">
+			<div className="flex w-96 flex-col items-start gap-y-4">
+				<h1 className="text-3xl font-semibold">Attach Box</h1>
+				<div className="flex w-96 flex-col items-center rounded-lg border border-stone-300 bg-white p-8 shadow-lg">
 					<form
 						action={createBoxAction}
-						className="flex flex-col gap-y-4"
+						className="flex flex-col gap-y-4 w-full"
 						autoComplete="off"
 					>
 						<input
@@ -85,7 +100,7 @@ export default function AttachBoxPage({
 								htmlFor="boxBarcode"
 								className="block text-sm text-stone-700 mb-1"
 							>
-								Box barcode (1-14 digits)
+								Box Barcode (1-14 digits)
 							</label>
 							<div className="flex items-center gap-x-2">
 								<Input
@@ -99,7 +114,7 @@ export default function AttachBoxPage({
 									maxLength={14}
 									pattern="\d*"
 									title="Box barcode must be 1 to 14 digits long and contain only numbers."
-									className="flex-1"
+									className="w-full max-w-full"
 								/>
 								<Button
 									type="button"
@@ -123,10 +138,12 @@ export default function AttachBoxPage({
 								name="itemsPerBox"
 								type="number"
 								value={itemsPerBox}
-								onChange={(e) => setItemsPerBox(e.target.value)}
+								onChange={handleItemsPerBoxChange}
 								min={1}
+								max={9999}
 								required
-								className="appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+								className="w-full max-w-full appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+								title="Items per box must be between 1 and 9999."
 							/>
 						</div>
 						{state.error && (
@@ -139,7 +156,7 @@ export default function AttachBoxPage({
 								disabled={state.pending}
 							>
 								{state.pending && <Loader className="animate-spin" />}
-								Attach box
+								Attach Box
 							</Button>
 							<Button asChild variant="outline" className="w-full">
 								<Link href={`/admin/products/${productBarcode}`}>Cancel</Link>

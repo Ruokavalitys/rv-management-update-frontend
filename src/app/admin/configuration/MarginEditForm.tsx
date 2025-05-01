@@ -50,10 +50,14 @@ export const MarginEditForm = ({ defaultMargin = 0.05 }) => {
 	useEffect(() => {
 		if (state.success && state.changedMargin) {
 			setLocalDefaultMargin(state.changedMargin);
+			const marginPercentage = state.changedMargin * 100;
+			const formattedMargin = Number.isInteger(marginPercentage)
+				? marginPercentage.toString()
+				: marginPercentage.toFixed(1);
 			toast({
 				title: "Default Margin Updated",
-				description: `The default margin is now ${(state.changedMargin * 100).toFixed(0)}%`,
-				duration: 6000,
+				description: `The default margin is now ${formattedMargin}%`,
+				duration: 3000,
 			});
 			router.refresh();
 		}
@@ -69,8 +73,8 @@ export const MarginEditForm = ({ defaultMargin = 0.05 }) => {
 							Array.isArray(state.error.margin) &&
 							state.error.margin.join(", ")) ||
 						undefined,
-				variant: "destructive",
-				duration: 6000,
+				variant: "default",
+				duration: 3000,
 			});
 		}
 	}, [state.error]);
