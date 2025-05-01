@@ -42,6 +42,16 @@ export default function DepositReport() {
           onChange={(e) => setNameFilter(e.target.value)}
           className="border px-2 py-1 rounded"
         />
+        <button
+          onClick={() => {
+            setStartDate('2000-01-01');
+            setEndDate('2025-12-31');
+            setNameFilter('');
+          }}
+          className="border px-3 py-1 rounded bg-gray-300 hover:bg-gray-400"
+        >
+          Clear filters
+        </button>
       </div>
 
       {deposits.length > 0 && (
