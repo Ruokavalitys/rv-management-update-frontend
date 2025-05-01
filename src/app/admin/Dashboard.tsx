@@ -214,7 +214,10 @@ export default function Dashboard({
   };
 
   return (
-    <div className="flex h-full w-full flex-col gap-y-4 py-12">
+    <div
+      className="flex h-full w-full flex-col gap-y-4 p-6 pl-0 overflow-y-auto"
+      style={{ scrollbarGutter: "stable" }}
+    >
       <h1 className="flex items-center gap-4 text-3xl font-semibold">
         Dashboard
         <div className="flex items-center gap-4">
@@ -293,7 +296,7 @@ export default function Dashboard({
           </div>
         </div>
       </h1>
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <div className="grid auto-rows-max grid-cols-subgrid gap-4">
           <Card className="h-max">
             <CardHeader>
@@ -321,9 +324,9 @@ export default function Dashboard({
                   </span>
                   <Link
                     href={`/admin/products/${product.barcode}`}
-                    className="hover:underline text-stone-900 dark:text-stone-100"
+                    className="hover:underline text-stone-900 dark:text-stone-100 overflow-hidden text-ellipsis whitespace-nowrap"
                   >
-                    {product.name}
+                    {truncateText(product.name, 45)}
                   </Link>
                 </Fragment>
               ))}
@@ -399,7 +402,7 @@ export default function Dashboard({
           </Card>
         </div>
       </div>
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <div className="grid grid-cols-subgrid gap-4">
           <Card className="h-max">
             <CardHeader>
