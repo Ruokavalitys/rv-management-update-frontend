@@ -111,7 +111,7 @@ export const CategoryRow = ({
 			toast({
 				title: "Category Updated",
 				description: `Category "${oldDescription}" is now "${newDescription}"`,
-				duration: 6000,
+				duration: 3000,
 			});
 			oldDescriptionRef.current = newDescription;
 		}

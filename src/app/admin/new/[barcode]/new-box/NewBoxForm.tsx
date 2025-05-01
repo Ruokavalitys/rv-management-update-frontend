@@ -75,7 +75,7 @@ export default function NewBoxForm({ boxBarcode, products }: Props) {
 			toast({
 				title: "Box Created",
 				description: `Box with barcode ${boxBarcode} created successfully.`,
-				duration: 4000,
+				duration: 3000,
 			});
 			router.push(
 				`/admin/buy_in/product/${selectedProductBarcode}?type=box&boxBarcode=${boxBarcode}`,

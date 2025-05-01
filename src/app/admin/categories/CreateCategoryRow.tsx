@@ -25,7 +25,7 @@ export const CreateCategoryRow = () => {
 			toast({
 				title: "Category Created",
 				description: `Category "${state.createdCategory.description}" has been created`,
-				duration: 6000,
+				duration: 3000,
 			});
 		}
 	}, [state.success, state.createdCategory]);
@@ -35,7 +35,7 @@ export const CreateCategoryRow = () => {
 			toast({
 				title: "Failed to create category",
 				description: "Please try again",
-				duration: 6000,
+				duration: 3000,
 			});
 		}
 	}, [state.error]);

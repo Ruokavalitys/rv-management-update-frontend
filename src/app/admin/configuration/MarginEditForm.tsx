@@ -73,7 +73,7 @@ export const MarginEditForm = ({ defaultMargin = 0.05 }) => {
 							Array.isArray(state.error.margin) &&
 							state.error.margin.join(", ")) ||
 						undefined,
-				variant: "destructive",
+				variant: "default",
 				duration: 3000,
 			});
 		}
