@@ -8,7 +8,9 @@ export default async function DepositsPage({ searchParams }: { searchParams: { p
   const page = parseInt(searchParams.page || "1", 10);
   const limit = parseInt(searchParams.limit || "10", 10);
 
-  const deposits = await getPagedDeposits(page, limit);
+  const { deposits, count } = await getPagedDeposits(page, limit);
+  const totalPages = Math.ceil(count / limit);
+  const isLastPage = page >= totalPages;
 
   return (
     <>
@@ -17,19 +19,23 @@ export default async function DepositsPage({ searchParams }: { searchParams: { p
         <TableAndFilter initialData={deposits} />
       </div>
       <div className="flex justify-between mt-4">
+      {page != 1 && (
         <a
-          href={`?page=${page > 1 ? page - 1 : 1}&limit=${limit}`}
+          href={`?page=${page > 1 ? page - 1 : 1}`}
           className={`btn ${page === 1 ? "btn-disabled" : ""}`}
         >
           Previous
         </a>
+        )}
         <>page:{page}</>
-        <a
-          href={`?page=${page + 1}&limit=${limit}`}
-          className={`btn ${deposits.length < limit ? "btn-disabled" : ""}`}
-        >
-          Next
-        </a>
+        {!isLastPage && (
+          <a
+            href={`?page=${page + 1}`}
+            className="btn"
+          >
+            Next
+          </a>
+        )}
       </div>
     </>
   );

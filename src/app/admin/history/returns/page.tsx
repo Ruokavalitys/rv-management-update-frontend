@@ -8,8 +8,11 @@ export default async function ReturnsPage({ searchParams }: { searchParams: { pa
   const page = parseInt(searchParams.page || "1", 10);
   const limit = parseInt(searchParams.limit || "10", 10);
 
-  const all = await getPagedPurchases(page, limit);
-  const returns = all.filter(all => all.returned)
+  const { purchases, count } = await getPagedPurchases(page, limit);
+  const returns = purchases.filter(all => all.returned)
+  const totalPages = Math.ceil(returns.length / limit);
+  const isLastPage = page >= totalPages;
+
 
   return (
     <>
@@ -18,19 +21,23 @@ export default async function ReturnsPage({ searchParams }: { searchParams: { pa
         <TableAndFilter initialData={returns} />
       </div>
       <div className="flex justify-between mt-4">
+      {page != 1 && (
         <a
-          href={`?page=${page > 1 ? page - 1 : 1}&limit=${limit}`}
+          href={`?page=${page > 1 ? page - 1 : 1}`}
           className={`btn ${page === 1 ? "btn-disabled" : ""}`}
         >
           Previous
         </a>
+        )}
         <>page:{page}</>
-        <a
-          href={`?page=${page + 1}&limit=${limit}`}
-          className={`btn ${returns.length < limit ? "btn-disabled" : ""}`}
-        >
-          Next
-        </a>
+        {!isLastPage && (
+          <a
+            href={`?page=${page + 1}`}
+            className="btn"
+          >
+            Next
+          </a>
+        )}
       </div>
     </>
   );
