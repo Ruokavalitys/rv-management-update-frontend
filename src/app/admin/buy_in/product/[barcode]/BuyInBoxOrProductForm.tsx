@@ -201,9 +201,13 @@ export default function BuyInFormClient({
 			});
 
 			const totalItemsAdded = boxCountNum * box.itemsPerBox;
+			const truncatedProductName =
+				box.productName.length > 50
+					? box.productName.substring(0, 47) + "..."
+					: box.productName;
 			toast({
 				title: "Buy-In Successful",
-				description: `Added ${totalItemsAdded} items of ${box.productName} (${box.productBarcode}) (${boxCountNum} box(es) with barcode ${box.boxBarcode})`,
+				description: `Added ${totalItemsAdded} items of ${truncatedProductName} (${box.productBarcode}) (${boxCountNum} box(es) with barcode ${box.boxBarcode})`,
 				duration: 3000,
 			});
 			router.push(`/admin/buy_in`);
@@ -250,9 +254,13 @@ export default function BuyInFormClient({
 
 			const result = await buyInProductAction(null, formData);
 			if (result.success && result.newStock) {
+				const truncatedProductName =
+					product.name.length > 50
+						? product.name.substring(0, 47) + "..."
+						: product.name;
 				toast({
 					title: "Buy-In Successful",
-					description: `Added ${productQuantity} items of product ${product.name}`,
+					description: `Added ${productQuantity} items of product ${truncatedProductName}`,
 					duration: 3000,
 				});
 				router.push(`/admin/buy_in`);
@@ -328,9 +336,15 @@ export default function BuyInFormClient({
 								<p className="text-sm">
 									<strong>Items Per Box:</strong> {box.itemsPerBox}
 								</p>
-								<p className="text-sm">
+								<div
+									className="text-sm break-words"
+									style={{
+										maxWidth: "100%",
+										wordBreak: "break-all",
+									}}
+								>
 									<strong>Product Name:</strong> {box.productName}
-								</p>
+								</div>
 								<p className="text-sm">
 									<strong>Product Barcode:</strong> {box.productBarcode}
 								</p>
@@ -444,9 +458,15 @@ export default function BuyInFormClient({
 										<p className="text-sm text-green-500">{successMessage}</p>
 									)}
 								</div>
-								<p className="text-sm">
+								<div
+									className="text-sm break-words"
+									style={{
+										maxWidth: "100%",
+										wordBreak: "break-all",
+									}}
+								>
 									<strong>Product Name:</strong> {product.name}
-								</p>
+								</div>
 								<p className="text-sm">
 									<strong>Current Stock:</strong> {product.stock}
 								</p>

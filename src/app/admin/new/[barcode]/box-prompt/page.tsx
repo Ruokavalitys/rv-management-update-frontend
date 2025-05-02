@@ -72,7 +72,15 @@ export default function BoxPromptPage({
 			) : (
 				<div className="flex w-96 flex-col items-center gap-y-6 rounded-lg border border-stone-300 bg-white p-8 shadow-md">
 					<h1 className="text-2xl font-semibold">Attach Box?</h1>
-					<p className="text-sm text-stone-700 text-center">
+					<p
+						className="text-sm text-stone-700 text-center overflow-wrap break-word"
+						style={{
+							maxWidth: "100%",
+							whiteSpace: "normal",
+							overflow: "hidden",
+							textOverflow: "ellipsis",
+						}}
+					>
 						Do you want to attach a box to {productName}?
 					</p>
 					<div className="flex w-full gap-x-4">

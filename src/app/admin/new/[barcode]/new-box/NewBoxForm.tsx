@@ -42,9 +42,21 @@ export default function NewBoxForm({ boxBarcode, products }: Props) {
 		handleProductSelect(null);
 	};
 
+	const handleItemsPerBoxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		const value = e.target.value;
+		if (value === "" || (Number(value) >= 1 && Number(value) <= 9999)) {
+			setItemsPerBox(value);
+			setError(null);
+		}
+	};
+
 	const handleAddNewProduct = () => {
-		if (!itemsPerBox || Number(itemsPerBox) <= 0) {
-			setError("Please enter a valid number of items per box.");
+		if (
+			!itemsPerBox ||
+			Number(itemsPerBox) <= 0 ||
+			Number(itemsPerBox) > 9999
+		) {
+			setError("Please enter a valid number of items per box (1-9999).");
 			return;
 		}
 		router.push(
@@ -58,8 +70,12 @@ export default function NewBoxForm({ boxBarcode, products }: Props) {
 			setError("Please select a product.");
 			return;
 		}
-		if (!itemsPerBox || Number(itemsPerBox) <= 0) {
-			setError("Please enter a valid number of items per box.");
+		if (
+			!itemsPerBox ||
+			Number(itemsPerBox) <= 0 ||
+			Number(itemsPerBox) > 9999
+		) {
+			setError("Please enter a valid number of items per box (1-9999).");
 			return;
 		}
 
@@ -91,15 +107,28 @@ export default function NewBoxForm({ boxBarcode, products }: Props) {
 		}
 	};
 
-	const productOptions = products
-		.map((product) => ({
-			categoryId: Number(product.barcode),
-			description: `${product.name} (${product.barcode})`,
-		}))
-		.sort((a, b) => a.description.localeCompare(b.description));
+	const truncateDescription = (
+		name: string,
+		barcode: string,
+		maxLength: number = 60,
+	) => {
+		const fullDescription = `${name} (${barcode})`;
+		if (fullDescription.length <= maxLength) return fullDescription;
+		const barcodePart = ` (${barcode})`;
+		const availableNameLength = maxLength - barcodePart.length - 3;
+		return `${name.substring(0, availableNameLength)}... (${barcode})`;
+	};
+
+	const productOptions = products.map((product) => ({
+		categoryId: Number(product.barcode),
+		description: truncateDescription(product.name, product.barcode),
+	}));
 
 	return (
-		<form onSubmit={handleSubmit} className="flex flex-col gap-y-6 w-96">
+		<form
+			onSubmit={handleSubmit}
+			className="flex flex-col gap-y-6 w-[449px] max-w-[90%]"
+		>
 			<div className="flex flex-col items-center gap-y-2">
 				<Barcode barcode={boxBarcode} displayInvalid />
 			</div>
@@ -130,13 +159,13 @@ export default function NewBoxForm({ boxBarcode, products }: Props) {
 							name="itemsPerBox"
 							type="number"
 							value={itemsPerBox}
-							onChange={(e) => {
-								setItemsPerBox(e.target.value);
-								setError(null);
-							}}
+							onChange={handleItemsPerBoxChange}
 							min={1}
+							max={9999}
+							required
 							autoFocus
-							className="appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+							className="w-full appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+							title="Items per box must be between 1 and 9999."
 						/>
 					</div>
 					<div>
