@@ -6,13 +6,13 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { currencyFormatter } from "@/lib/moneyFormatter";
 import { Box, getAllBoxes, updateBox } from "@/server/requests/boxRequests";
-import { Product } from "@/server/requests/productRequests";
+import { AdminProduct } from "@/server/requests/productRequests";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import AttachedBoxesList from "./AttachedBoxesList";
 
 type OwnProps = {
-	product: Product;
+	product: AdminProduct;
 	initialBoxes?: Box[];
 };
 

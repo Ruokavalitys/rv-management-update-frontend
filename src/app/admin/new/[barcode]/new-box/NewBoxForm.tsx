@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import { createBox } from "@/server/requests/boxRequests";
-import { Product } from "@/server/requests/productRequests";
+import { AdminProduct } from "@/server/requests/productRequests";
 import { Loader, X } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -14,7 +14,7 @@ import { useCallback, useState } from "react";
 
 type Props = {
 	boxBarcode: string;
-	products: Product[];
+	products: AdminProduct[];
 };
 
 export default function NewBoxForm({ boxBarcode, products }: Props) {

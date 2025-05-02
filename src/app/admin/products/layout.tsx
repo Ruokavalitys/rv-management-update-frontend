@@ -1,6 +1,9 @@
 "use client";
 
-import { Product, getAllProducts } from "@/server/requests/productRequests";
+import {
+	AdminProduct,
+	getAllProducts,
+} from "@/server/requests/productRequests";
 import React, { useEffect, useState } from "react";
 import ProductTable from "./ProductTable";
 
@@ -9,7 +12,7 @@ interface ProductsLayoutProps {
 }
 
 const ProductsLayout: React.FC<ProductsLayoutProps> = ({ children }) => {
-	const [products, setProducts] = useState<Product[]>([]);
+	const [products, setProducts] = useState<AdminProduct[]>([]);
 	const [productCount, setProductCount] = useState(0);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);

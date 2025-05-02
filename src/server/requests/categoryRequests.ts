@@ -1,7 +1,7 @@
 "use server";
 
 import { authenticated } from "../wrappers";
-import { Product } from "./productRequests";
+import { AdminProduct } from "./productRequests";
 import { QueryKeys } from "./queryKeys";
 
 const targetUrl = "api/v1/categories";
@@ -51,7 +51,7 @@ export async function updateCategory(category: updateCategoryRequest) {
 
 type deleteCategoryResponse = {
 	deletedCategory: Category;
-	movedProducts: Product["barcode"][];
+	movedProducts: AdminProduct["barcode"][];
 };
 
 export async function deleteCategory(categoryId: number) {

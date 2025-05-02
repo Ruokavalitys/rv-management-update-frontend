@@ -1,14 +1,14 @@
 "use server";
 
 import { authenticated } from "../wrappers";
-import { Product } from "./productRequests";
+import { AdminProduct } from "./productRequests";
 
 const targetUrl = "api/v1/admin/boxes";
 
 export type Box = {
 	boxBarcode: string;
 	itemsPerBox: number;
-	product: Omit<Product, "buyPrice">;
+	product: Omit<AdminProduct, "buyPrice">;
 };
 
 export const getAllBoxes = async () => {

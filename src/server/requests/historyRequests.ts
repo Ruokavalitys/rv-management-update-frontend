@@ -1,9 +1,8 @@
-// historyRequests.ts
 "use server";
 
 import { User } from "@/server/requests/userRequests";
 import { authenticated } from "@/server/wrappers";
-import { Product } from "./productRequests";
+import { AdminProduct } from "./productRequests";
 import { QueryKeys } from "./queryKeys";
 
 const adminDepositsUrl = "api/v1/admin/depositHistory";
@@ -22,7 +21,7 @@ export type Deposit = {
 };
 export type getAllDepositsResponse = {
 	deposits: Deposit[];
-}; 
+};
 
 export async function getAllDeposits() {
 	"use server";
@@ -53,17 +52,17 @@ export async function getCurrentUserDeposits() {
 }
 
 export type Purchase = {
-  purchaseId: number;
-  time: string;
-  price: number;
-  balanceAfter: number;
-  stockAfter: number;
-  product: Product;
-  user: User;
-  returned: boolean;
-  returnedTime: string;
-  returnedBalanceAfter: number;
-  isReturnAction: boolean;
+	purchaseId: number;
+	time: string;
+	price: number;
+	balanceAfter: number;
+	stockAfter: number;
+	product: AdminProduct;
+	user: User;
+	returned: boolean;
+	returnedTime: string;
+	returnedBalanceAfter: number;
+	isReturnAction: boolean;
 };
 export type getAllPurchasesResponse = {
 	purchases: Purchase[];
@@ -100,7 +99,7 @@ export async function getCurrentUserPurchases() {
 export type getPagedDepositsResponse = {
 	deposits: Deposit[];
 	count: number;
-}; 
+};
 
 export async function getPagedDeposits(page: number, limit: number) {
 	"use server";
@@ -110,15 +109,15 @@ export async function getPagedDeposits(page: number, limit: number) {
 	return await authenticated<getPagedDepositsResponse>(
 		`${process.env.RV_BACKEND_URL}/${adminDepositsUrl}`,
 		{
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            next: {
-                tags: [QueryKeys.deposits, offset.toString(), limit.toString()],
-            },
-        },
-		{ limit, offset }
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+			},
+			next: {
+				tags: [QueryKeys.deposits, offset.toString(), limit.toString()],
+			},
+		},
+		{ limit, offset },
 	).then((data) => {
 		return data;
 	});
@@ -137,15 +136,15 @@ export async function getPagedPurchases(page: number, limit: number) {
 	return await authenticated<getPagedPurchasesResponse>(
 		`${process.env.RV_BACKEND_URL}/${adminPurchasesUrl}`,
 		{
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            next: {
-                tags: [QueryKeys.purchases, offset.toString(), limit.toString()],
-            },
-        },
-		{ limit, offset }
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+			},
+			next: {
+				tags: [QueryKeys.purchases, offset.toString(), limit.toString()],
+			},
+		},
+		{ limit, offset },
 	).then((data) => {
 		return data;
 	});
@@ -159,15 +158,15 @@ export async function getPagedCombined(page: number, limit: number) {
 	return await authenticated<getPagedPurchasesResponse>(
 		`${process.env.RV_BACKEND_URL}/${overViewUrl}`,
 		{
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            next: {
-                tags: [QueryKeys.purchases, offset.toString(), limit.toString()],
-            },
-        },
-		{ limit, offset }
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+			},
+			next: {
+				tags: [QueryKeys.purchases, offset.toString(), limit.toString()],
+			},
+		},
+		{ limit, offset },
 	).then((data) => {
 		return data;
 	});

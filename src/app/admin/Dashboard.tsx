@@ -16,7 +16,7 @@ import {
 import { currencyFormatter } from "@/lib/moneyFormatter";
 import { merge } from "@/lib/utils";
 import { Purchase } from "@/server/requests/historyRequests";
-import { Product } from "@/server/requests/productRequests";
+import { AdminProduct } from "@/server/requests/productRequests";
 import {
   BadgeEuro,
   ChevronDown,
@@ -101,7 +101,7 @@ export default function Dashboard({
   products,
   purchases,
 }: {
-  products: Product[];
+  products: AdminProduct[];
   purchases: Purchase[];
 }) {
   const [dateRange, setDateRange] = useState<keyof typeof rangeOptions>("all");
