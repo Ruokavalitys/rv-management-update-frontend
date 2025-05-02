@@ -1,7 +1,7 @@
 "use client";
 
 import { currencyFormatter } from "@/lib/moneyFormatter";
-import { Product } from "@/server/requests/productRequests";
+import { AdminProduct } from "@/server/requests/productRequests";
 import { useAtomValue } from "jotai";
 import { atomWithReset } from "jotai/utils";
 import Link from "next/link";
@@ -20,7 +20,7 @@ export const productFiltersAtom = atomWithReset({
 });
 
 interface ProductTableProps {
-	products: Product[];
+	products: AdminProduct[];
 	onCountChange: (count: number) => void;
 }
 

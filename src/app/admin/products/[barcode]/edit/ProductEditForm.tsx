@@ -9,7 +9,7 @@ import { calculateMargin, calculateSellPrice } from "@/lib/marginUtils";
 import { nextFieldOnEnter } from "@/lib/utils";
 import { editProductAction } from "@/server/actions/products";
 import { Category } from "@/server/requests/categoryRequests";
-import { Product } from "@/server/requests/productRequests";
+import { AdminProduct } from "@/server/requests/productRequests";
 import { RotateCcw } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -17,7 +17,7 @@ import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { useFormState } from "react-dom";
 
 type ProductEditFormProps = {
-	product: Product;
+	product: AdminProduct;
 	defaultMargin: number;
 	categories: Category[];
 };

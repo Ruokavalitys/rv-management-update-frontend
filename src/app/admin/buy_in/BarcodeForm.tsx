@@ -3,12 +3,12 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Box } from "@/server/requests/boxRequests";
-import { Product } from "@/server/requests/productRequests";
+import { AdminProduct } from "@/server/requests/productRequests";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 type OwnProps = {
-	products: Product[];
+	products: AdminProduct[];
 	boxes: Box[];
 };
 

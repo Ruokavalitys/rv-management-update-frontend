@@ -7,14 +7,17 @@ import { useToast } from "@/components/ui/use-toast";
 import { calculateSellPrice } from "@/lib/marginUtils";
 import { nextFieldOnEnter } from "@/lib/utils";
 import { buyInProductAction } from "@/server/actions/products";
-import { Product, addStockResponse } from "@/server/requests/productRequests";
+import {
+	AdminProduct,
+	addStockResponse,
+} from "@/server/requests/productRequests";
 import { Loader, X } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useFormState, useFormStatus } from "react-dom";
 
-type OwnProps = { product: Product; defaultMargin: number };
+type OwnProps = { product: AdminProduct; defaultMargin: number };
 
 export default function BuyInProductForm({ product, defaultMargin }: OwnProps) {
 	const [count, setCount] = useState<number | undefined>(undefined);

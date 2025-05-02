@@ -1,4 +1,3 @@
-// src/app/(user)/products/layout.tsx
 "use client";
 
 import {

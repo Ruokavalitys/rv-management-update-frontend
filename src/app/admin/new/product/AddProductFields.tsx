@@ -11,7 +11,7 @@ import { nextFieldOnEnter } from "@/lib/utils";
 import { addProductAction } from "@/server/actions/products";
 import { createBox } from "@/server/requests/boxRequests";
 import { Category } from "@/server/requests/categoryRequests";
-import { Product } from "@/server/requests/productRequests";
+import { AdminProduct } from "@/server/requests/productRequests";
 import { Dice5 } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -26,7 +26,7 @@ function AddProductFields({ categories }: { categories: Category[] }) {
 	const [state, addProduct] = useFormState<
 		{
 			success: boolean;
-			newProduct?: Product;
+			newProduct?: AdminProduct;
 			error?: { name?: string[]; general?: string };
 		},
 		FormData
